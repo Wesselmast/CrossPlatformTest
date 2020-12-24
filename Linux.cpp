@@ -4,6 +4,19 @@
 #include <X11/Xlib.h>
 #include <GL/glx.h>
 
+void expose(const XEvent& e, Display* d, Window& w) {
+  XWindowAttributes wa;
+  XGetWindowAttributes(d, w, &wa);
+  glViewport(0, 0, wa.width, wa.height);
+  draw_quad();
+  glXSwapBuffers(d, w); 
+}
+
+bool key(const XEvent& e, bool down) {
+  printf("%s key: %x\n", down ? "Pressed" : "Released", e.xkey.keycode);
+  return e.xkey.keycode == 9;
+}
+
 int main() {
   GLint glAtt[] = {
     GLX_RGBA,
@@ -33,19 +46,17 @@ int main() {
 
   gl_start();
 
-  XWindowAttributes wa;
+  bool quit = false;
   XEvent e;
-  do {
-    XNextEvent(d, &e);
 
-    if(e.type == Expose) {
-      XGetWindowAttributes(d, w, &wa);
-      glViewport(0, 0, wa.width, wa.height);
-      draw_quad();
-      glXSwapBuffers(d, w);
+  while(!quit) {
+    XNextEvent(d, &e);
+    switch(e.type) {
+      case Expose:   	expose(e, d, w);       break;
+      case KeyPress:    quit |= key(e, true);  break;
+      case KeyRelease:  quit |= key(e, false); break;
     }
   }
-  while(e.type != ButtonPress);
 
   glXMakeCurrent(d, None, 0);
   glXDestroyContext(d, glc);
