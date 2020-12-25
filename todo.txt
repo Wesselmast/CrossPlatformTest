@@ -1,0 +1,21 @@
+############ WELCOME TO THE TODO FOR THIS PROJECT ############ 
+
+Priorities (in order):
+- Cameras
+- First person camera
+- 3D Meshes (cube)
+- Get rid of glm
+
+######### MAKE A DECISION ON THE GOAL OF THE PROJECT #########
+
+Another Game Engine
+- Textures
+- Importing meshes
+
+Terrain editor
+- Mesh deformation
+
+Weird projections
+- Projection math!
+
+Other..
