@@ -51,12 +51,16 @@ float32 pi() {
   return 3.14159265359f;
 }
 
-float32 radians_to_degrees() {
+float32 r2d() {
   return 180.0f / pi();
 }
 
-float32 degrees_to_radians() {
+float32 d2r() {
   return pi() / 180.0f;
+}
+
+Vec3 zero() {
+  return {0.0f, 0.0f, 0.0f};
 }
 
 Vec3 vec3_from_scalar(float32 scalar) {
@@ -283,8 +287,8 @@ Mat4 mat4_perspective(float32 width, float32 height, float32 near, float32 far) 
 }
 
 Mat4 mat4_perspective_fov(float32 fov, float32 aspect, float32 near, float32 far) {
-  float32 cosFov = (float32)cos(0.5f * fov * degrees_to_radians());
-  float32 sinFov = (float32)sin(0.5f * fov * degrees_to_radians());
+  float32 cosFov = (float32)cos(0.5f * fov * d2r());
+  float32 sinFov = (float32)sin(0.5f * fov * d2r());
 
   float32 height = cosFov / sinFov;
   float32 width = height / aspect;

@@ -12,9 +12,31 @@ void expose(OpenGLState* state, Display* d, Window& w) {
   state->windowHeight = wa.height;
 }
 
-bool key(const XEvent& e, bool down) {
-  printf("%s key: %x\n", down ? "Pressed" : "Released", e.xkey.keycode);
-  return e.xkey.keycode == 9;
+bool key(OpenGLState* state, const XEvent& e, bool down) {
+  Camera* c = state->camera;
+  float x = c->position.x;
+  float y = c->position.y;
+  float z = c->position.z;
+
+  float xr = c->rotation.x;
+  float yr = c->rotation.y;
+  float zr = c->rotation.z;
+  const float s = 1;
+  const float sr = 22.5f * d2r();
+
+  switch(e.xkey.keycode) {
+    case 25: z += s;   break; //W
+    case 39: z -= s;   break; //S
+    case 38: x -= s;   break; //A
+    case 40: x += s;   break; //D
+    case 24: zr -= sr; break; //Q
+    case 26: xr += sr; break; //E
+    case  9: return 1;
+    default: log_("%s key: %d\n", down ? "Pressed" : "Released", e.xkey.keycode);
+  }
+
+  c->set_transform(state, {x,y,z}, {xr,yr,zr});
+  return 0;
 }
 
 int main() {
@@ -46,7 +68,7 @@ int main() {
 
   OpenGLState* state = gl_start();
 
-  rect(state, {500.0f, 500.0f}, 70, {104.0f/255.0f, 182.0f/255.0f, 132.0f/255.0f});
+  rect(state, {0.0f, 0.0f}, 1, {104.0f/255.0f, 182.0f/255.0f, 132.0f/255.0f});
 
   bool quit = false;
   XEvent e;
@@ -56,9 +78,9 @@ int main() {
       XNextEvent(d, &e);
     
       switch(e.type) {
-	case Expose:   	 expose(state, d, w);   break;
-	case KeyPress:   quit |= key(e, true);  break;
-	case KeyRelease: quit |= key(e, false); break;
+	case Expose:   	 expose(state, d, w);          break;
+	case KeyPress:   quit |= key(state, e, true);  break;
+	case KeyRelease: quit |= key(state, e, false); break;
       }
     }
 
