@@ -8,12 +8,14 @@ struct EntityAttributes {
   uint32 size;
   Vec3 color;
   uint32 vertexCount;
+  uint32 vertexSize;
 };
 
 struct Entity {
   uint32 program;
   uint32 vertexBuffer;
   uint32 vertexCount;
+  uint32 vertexSize;
   Vec3 color;
   
   void load_shaders(const char* vPath, const char* fPath) {
@@ -67,7 +69,8 @@ struct Entity {
   Entity* init(OpenGLState* state, EntityAttributes* attr) {
     color = attr->color;
     vertexCount = attr->vertexCount;
-    
+    vertexSize = attr->vertexSize;
+
     load_shaders("res/shaders/defaultV.glsl", "res/shaders/defaultF.glsl");
     glGenBuffers(1, &vertexBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
@@ -78,23 +81,25 @@ struct Entity {
   }
 };
 
-Entity* rect(OpenGLState* state, const Vec2& position, float32 scale, const Vec3& color) {
+Entity* rect(OpenGLState* state, const Vec3& position, float32 scale, const Vec3& color) {
   const float32& x = position.x;
   const float32& y = position.y;
+  const float32& z = position.z;
 
   float32 vertices[] = {
-    x - scale, y - scale,
-    x + scale, y - scale,
-    x + scale, y + scale,
-    x - scale, y - scale,
-    x - scale, y + scale,
-    x + scale, y + scale,
+    x - scale, y - scale, z, 
+    x + scale, y - scale, z,
+    x + scale, y + scale, z,
+    x - scale, y - scale, z,
+    x - scale, y + scale, z,
+    x + scale, y + scale, z,
   };
 
   EntityAttributes attr;
   attr.vertices = vertices;
   attr.size = sizeof(vertices);
   attr.vertexCount = 6;
+  attr.vertexSize = 3;
   attr.color = color;
 
   return ((Entity*)malloc(sizeof(Entity)))->init(state, &attr);

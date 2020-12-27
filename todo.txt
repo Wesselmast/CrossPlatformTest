@@ -4,7 +4,6 @@ Priorities (in order):
 - Cameras
 - First person camera
 - 3D Meshes (cube)
-- Get rid of glm
 
 ######### MAKE A DECISION ON THE GOAL OF THE PROJECT #########
 

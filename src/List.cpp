@@ -33,6 +33,28 @@ struct List {
     tail->next = node;
   }
 
+  void remove(T data) {
+    Node<T>* current = head;
+    Node<T>* last = nullptr;
+
+    if(!head) return;
+    if(current->data == data) {
+      head = current->next;
+      free(current);
+      return;
+    }
+
+    while(current) {
+      if(current->data == data) {
+	last->next = current->next;
+	free(current);
+	return;
+      }
+      last = current;
+      current = current->next;
+    }
+  }
+
   void free_list() {
     Node<T>* current = head;
     Node<T>* next = nullptr;

@@ -9,11 +9,6 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
-/* these should later be removed */
-#include "glm/glm.hpp" 
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/type_ptr.hpp"
-
 struct Entity;
 struct Camera;
 
@@ -61,7 +56,7 @@ void gl_render(OpenGLState* state) {
 
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, e->vertexBuffer);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    glVertexAttribPointer(0, e->vertexSize, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
     glUseProgram(e->program);
 
