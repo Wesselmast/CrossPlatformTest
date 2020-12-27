@@ -74,6 +74,12 @@ struct Input {
   bool keyFlags[MAXKEYVALUE];
   List<fptr_keyevent> keyDownEvents[MAXKEYVALUE];
   List<fptr_keyevent> keyUpEvents[MAXKEYVALUE];
+  int32 mouseX = 0;
+  int32 mouseY = 0;
+  int32 lastMouseX = 0;
+  int32 lastMouseY = 0;
+  int32 mouseXDiff = 0;
+  int32 mouseYDiff = 0;
 };
 
 void register_key_up(Input* input, uint8 key, fptr_keyevent e) {
@@ -135,4 +141,15 @@ void set_key_state(Input* input, uint8 key, bool down) {
 
 bool is_down(Input* input, uint8 key) {
   return input->keyInput[key];
+}
+
+void set_mouse_moved(Input* input, int32 x, int32 y) {
+  input->mouseX = x;
+  input->mouseY = y;
+ 
+  input->mouseXDiff = x - input->lastMouseX;
+  input->mouseYDiff = y - input->lastMouseY;
+  
+  input->lastMouseX = x;
+  input->lastMouseY = y;
 }

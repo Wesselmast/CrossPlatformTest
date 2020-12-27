@@ -33,16 +33,16 @@ OpenGLState* gl_start() {
 
   glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
- // glClearDepth(1.0f);
- // glEnable(GL_DEPTH_TEST);
- // glDepthFunc(GL_LEQUAL);
- // glShadeModel(GL_SMOOTH);
- // glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+  //glClearDepth(1.0f);
+  //glEnable(GL_DEPTH_TEST);
+  //glDepthFunc(GL_LEQUAL);
+  //glShadeModel(GL_SMOOTH);
+  //glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
   return state;
 }
 
-void gl_render(OpenGLState* state) {
+void gl_tick(OpenGLState* state) {
   glClear(GL_COLOR_BUFFER_BIT);
 
   uint16& w = state->windowWidth;
