@@ -153,3 +153,13 @@ void set_mouse_moved(Input* input, int32 x, int32 y) {
   input->lastMouseX = x;
   input->lastMouseY = y;
 }
+
+void reset_mouse(Input* input, int32 toX, int32 toY) {
+  input->mouseX = toX;
+  input->mouseY = toY;
+  input->mouseXDiff = 0;
+  input->mouseYDiff = 0;
+  input->lastMouseX = toX;
+  input->lastMouseY = toY;
+}
+
