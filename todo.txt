@@ -1,7 +1,6 @@
 ############ WELCOME TO THE TODO FOR THIS PROJECT ############ 
 
 Priorities (in order):
-- Make it so rotations aren't in radians
 - Change math library so you dont need to transpose
 
 ######### MAKE A DECISION ON THE GOAL OF THE PROJECT #########
