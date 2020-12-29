@@ -5,18 +5,30 @@
 
 struct EntityAttributes {
   float32* vertices;
-  uint32 size;
-  Vec3 color;
-  uint32 vertexCount;
+  uint32 vertexCount; 
   uint32 vertexSize;
+  uint32 vertArrSize;
+  
+  uint32* indices;
+  uint32 indArrSize;
+
+  Vec3 color;
+  Transform transform;
 };
 
 struct Entity {
   uint32 program;
+  
   uint32 vertexBuffer;
   uint32 vertexCount;
   uint32 vertexSize;
+
+  uint32 indexBuffer;
+  uint32 indexBufferSize;  
+
   Vec3 color;
+  Mat4 modelMatrix;
+  Transform transform;
   
   void load_shaders(const char* vPath, const char* fPath) {
     uint32 vertexShader   = glCreateShader(GL_VERTEX_SHADER);
@@ -66,43 +78,113 @@ struct Entity {
     glDeleteShader(fragmentShader);
   }
 
+  void set_scale(const Vec3& scale) {
+    transform.scale = scale;
+    set_transform(transform);
+  }
+
+  void set_rotation(const Vec3& rotation) {
+    transform.rotation = rotation;
+    set_transform(transform);
+  }
+
+  void set_position(const Vec3& position) {
+    transform.position = position;
+    set_transform(transform);
+  }
+
+  void set_transform(const Transform& t) {
+    modelMatrix = 
+      mat4_transpose(
+	mat4_scaling(t.scale) * 
+	mat4_euler_rotation(t.rotation) *
+	mat4_translation(t.position));
+    this->transform = t;
+  }
+
   Entity* init(OpenGLState* state, EntityAttributes* attr) {
     color = attr->color;
     vertexCount = attr->vertexCount;
     vertexSize = attr->vertexSize;
+    indexBufferSize = attr->indArrSize / sizeof(uint32);
 
     load_shaders("res/shaders/defaultV.glsl", "res/shaders/defaultF.glsl");
+
     glGenBuffers(1, &vertexBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, attr->size, attr->vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, attr->vertArrSize, attr->vertices, GL_STATIC_DRAW);
+
+    glGenBuffers(1, &indexBuffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, attr->indArrSize, attr->indices, GL_STATIC_DRAW);
+
+    transform = attr->transform;
+    set_transform(transform);
 
     state->entities.insert(this);
     return this;
   }
 };
 
-Entity* rect(OpenGLState* state, const Vec3& position, float32 scale, const Vec3& color) {
-  const float32& x = position.x;
-  const float32& y = position.y;
-  const float32& z = position.z;
-
+Entity* rect(OpenGLState* state, const Transform& t, const Vec3& color) {
   float32 vertices[] = {
-    x - scale, y - scale, z, 
-    x + scale, y - scale, z,
-    x + scale, y + scale, z,
-    x - scale, y - scale, z,
-    x - scale, y + scale, z,
-    x + scale, y + scale, z,
+    -1.0f,  1.0f,  0.0f, 
+     1.0f,  1.0f,  0.0f,
+     1.0f, -1.0f,  0.0f,
+    -1.0f, -1.0f,  0.0f,
+  };
+
+  uint32 indices[] = {
+    0, 1, 2,
+    2, 3, 0
   };
 
   EntityAttributes attr;
   attr.vertices = vertices;
-  attr.size = sizeof(vertices);
-  attr.vertexCount = 6;
+  attr.vertArrSize = sizeof(vertices);
+  attr.vertexCount = 4;
   attr.vertexSize = 3;
-  attr.color = color;
+  attr.transform = t;
 
+  attr.indices = indices;
+  attr.indArrSize = sizeof(indices);
+
+  attr.color = color;
   return ((Entity*)malloc(sizeof(Entity)))->init(state, &attr);
 }
 
+Entity* cube(OpenGLState* state, const Transform& t, const Vec3& color) {
+  float32 vertices[] = {
+    -1.0f, -1.0f, -1.0f,
+     1.0f, -1.0f, -1.0f,
+     1.0f,  1.0f, -1.0f,
+    -1.0f,  1.0f, -1.0f,
 
+    -1.0f, -1.0f,  1.0f,
+     1.0f, -1.0f,  1.0f,
+     1.0f,  1.0f,  1.0f,
+    -1.0f,  1.0f,  1.0f,
+  };
+
+  uint32 indices[] = {
+    0, 1, 3, 3, 1, 2,
+    1, 5, 2, 2, 5, 6,
+    5, 4, 6, 6, 4, 7,
+    4, 0, 7, 7, 0, 3,
+    3, 2, 7, 7, 2, 6,
+    4, 5, 0, 0, 5, 1
+  };
+
+  EntityAttributes attr;
+  attr.vertices = vertices;
+  attr.vertArrSize = sizeof(vertices);
+  attr.vertexCount = 8;
+  attr.vertexSize = 3;
+  attr.transform = t;
+
+  attr.indices = indices;
+  attr.indArrSize = sizeof(indices);
+
+  attr.color = color;
+  return ((Entity*)malloc(sizeof(Entity)))->init(state, &attr);
+}

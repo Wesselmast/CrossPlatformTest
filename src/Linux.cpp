@@ -47,7 +47,7 @@ int main() {
   xAtt.colormap = cmap;
   xAtt.event_mask = KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | ExposureMask;
 
-  Window w = XCreateWindow(d, root, 0, 0, 300, 300, 0, vi->depth, InputOutput, 
+  Window w = XCreateWindow(d, root, 0, 0, 500, 500, 0, vi->depth, InputOutput, 
 			   vi->visual, CWColormap | CWEventMask, &xAtt);
   XMapWindow(d, w);
   XStoreName(d, w, "First GNU/Linux App");
@@ -60,8 +60,7 @@ int main() {
 
   OpenGLState* state = gl_start();
   Input* input = input_start();
-
-  app_start(state, input);
+  AppState* app = app_start(state, input);
 
   std::chrono::high_resolution_clock timer;
   float64 time = 0;
@@ -96,14 +95,18 @@ int main() {
       reset_mouse(input, midX, midY);
     }
 
-    input_tick(input, state);  		  //input
-    if(app_tick(state, input, dt)) break; //simulate
-    gl_tick(state);            	          //render
+    input_tick(input); 
+    if(app_tick(state, input, app, dt, time)) break;
+    gl_tick(state, app->camera);
     glXSwapBuffers(d, w);
 
     dt = std::chrono::duration<double>(timer.now() - start).count();
     time += dt;
   }
+
+  gl_end(state);
+  input_end(input);
+  app_end(app);
 
   glXMakeCurrent(d, None, 0);
   glXDestroyContext(d, glc);

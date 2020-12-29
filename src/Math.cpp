@@ -47,24 +47,28 @@ float32 clamp(float32 value, float32 min, float32 max) {
   return value;
 }
 
-float32 pi() {
+const float32 pi() {
   return 3.14159265359f;
 }
 
-float32 r2d() {
+const float32 r2d() {
   return 180.0f / pi();
 }
 
-float32 d2r() {
+const float32 d2r() {
   return pi() / 180.0f;
 }
 
-Vec3 zero() {
-  return {0.0f, 0.0f, 0.0f};
+const Vec3 vec3_from_scalar(float32 scalar) {
+  return {scalar, scalar, scalar};
 }
 
-Vec3 vec3_from_scalar(float32 scalar) {
-  return {scalar, scalar, scalar};
+const Vec3 zero() {
+  return vec3_from_scalar(0.0f);
+}
+
+const Vec3 one() {
+  return vec3_from_scalar(1.0f);
 }
 
 Vec3 operator-(const Vec3& a) {
@@ -180,9 +184,9 @@ float32 vec2_angle(const Vec2& a, const Vec2& b) {
 
 Vec3 vec3_forward(const Vec3& rot) {
   Vec3 result = {};
-  result.x =  sin(rot.y);//cos(rot.x) * cos(rot.y);
-  result.y = -tan(rot.x);
-  result.z =  cos(rot.y);// * sin(rot.y);
+  result.x =  sin(rot.y * d2r());
+  result.y = -tan(rot.x * d2r());
+  result.z =  cos(rot.y * d2r());
   return result;
 }
 
@@ -361,9 +365,9 @@ Mat4 mat4_x_rotation(float angle) {
 
 Mat4 mat4_euler_rotation(const Vec3& rot) {
   Mat4 mat = 
-    mat4_z_rotation(rot.z) *
-    mat4_y_rotation(rot.y) *
-    mat4_x_rotation(rot.x);
+    mat4_z_rotation(rot.z * d2r()) *
+    mat4_y_rotation(rot.y * d2r()) *
+    mat4_x_rotation(rot.x * d2r());
   return mat;
 }
 

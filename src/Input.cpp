@@ -61,13 +61,26 @@ enum {
   KEY_N 	    = 57,
   KEY_M 	    = 58,
 
+  KEY_F1 	    = 67,
+  KEY_F2 	    = 68,
+  KEY_F3 	    = 69,
+  KEY_F4 	    = 70,
+  KEY_F5 	    = 71,
+  KEY_F6 	    = 72,
+  KEY_F7 	    = 73,
+  KEY_F8 	    = 74,
+  KEY_F9 	    = 75,
+  KEY_F10	    = 76,
+  KEY_F11	    = 95,
+  KEY_F12	    = 96,
+
   MAXKEYVALUE       = KEY_DELETE + 1
 };  
 
 #elif defined(__WINDOWS__)
 #endif
 
-typedef void(*fptr_keyevent)(OpenGLState*); //instead of an OpenGLState*, this will probably be a pointer to application state
+typedef void(*fptr_keyevent)();
 
 struct Input {
   bool keyInput[MAXKEYVALUE];
@@ -98,10 +111,10 @@ void unregister_key_down(Input* input, uint8 key, fptr_keyevent e) {
   input->keyDownEvents[key].remove(e);
 }
 
-void trigger_events(const List<fptr_keyevent>& list, OpenGLState* state) {
+void trigger_events(const List<fptr_keyevent>& list) {
   Node<fptr_keyevent>* current = list.head;
   while(current) {
-    current->data(state);
+    current->data();
     current = current->next;
   }
 }
@@ -118,18 +131,18 @@ void input_end(Input* input) {
   free(input);
 }
 
-void input_tick(Input* input, OpenGLState* state) {
+void input_tick(Input* input) {
   for(uint8 key = 0; key < MAXKEYVALUE; ++key) {
     bool& in = input->keyInput[key];
     bool& flag = input->keyFlags[key];
 
     if(in && !flag) {
       flag = 1;
-      trigger_events(input->keyDownEvents[key], state);
+      trigger_events(input->keyDownEvents[key]);
     }
     else if(!in && flag) {
       flag = 0;
-      trigger_events(input->keyUpEvents[key], state);
+      trigger_events(input->keyUpEvents[key]);
     }
   } 
 }

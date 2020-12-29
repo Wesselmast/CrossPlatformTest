@@ -10,11 +10,9 @@
 #include <GL/glu.h>
 
 struct Entity;
-struct Camera;
 
 struct OpenGLState {
   List<Entity*> entities;
-  Camera* camera;
   uint16 windowWidth;
   uint16 windowHeight;
 };
@@ -22,41 +20,51 @@ struct OpenGLState {
 #include "Entity.cpp"
 #include "Camera.cpp"
 
+#define RENDERMODE_NORMAL     0x01
+#define RENDERMODE_WIREFRAME  0x02
+#define RENDERMODE_POINT      0x04
+
+inline void set_rendermode(uint8 renderMode) {
+  switch(renderMode) {
+    case RENDERMODE_NORMAL:    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);  break;
+    case RENDERMODE_WIREFRAME: glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);  break;
+    case RENDERMODE_POINT:     glPolygonMode(GL_FRONT_AND_BACK, GL_POINT); break;
+  }
+}
+
 OpenGLState* gl_start() {
   if(glewInit() != GLEW_OK) {
     printf("glew is bogged!");
     return nullptr;
   }
 
-  OpenGLState* state = (OpenGLState*)malloc(sizeof(OpenGLState));
-  state->camera = create_camera(state);
-
   glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+  glClearDepth(1.0f);
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LEQUAL);
+  glShadeModel(GL_SMOOTH);
+  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
-  //glClearDepth(1.0f);
-  //glEnable(GL_DEPTH_TEST);
-  //glDepthFunc(GL_LEQUAL);
-  //glShadeModel(GL_SMOOTH);
-  //glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-
-  return state;
+  return (OpenGLState*)malloc(sizeof(OpenGLState));
 }
 
-void gl_tick(OpenGLState* state) {
-  glClear(GL_COLOR_BUFFER_BIT);
+void gl_tick(OpenGLState* state, Camera* c) {
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   uint16& w = state->windowWidth;
   uint16& h = state->windowHeight;
   glViewport(0, 0, w, h);
   
-  Mat4 proj = state->camera->get_view_projection();
+  Mat4 vp = c->get_view_projection();
   Node<Entity*>* current = state->entities.head;
   while(current) {
     Entity* e = current->data;
 
-    glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, e->vertexBuffer);
+    glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, e->vertexSize, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, e->indexBuffer);
 
     glUseProgram(e->program);
 
@@ -65,8 +73,10 @@ void gl_tick(OpenGLState* state) {
     float32& b = e->color.z;
 
     glUniform3f(glGetUniformLocation(e->program, "objColor"), r, g, b);
-    glUniformMatrix4fv(glGetUniformLocation(e->program, "projection"), 1, GL_FALSE, &(proj.m0[0]));
-    glDrawArrays(GL_TRIANGLES, 0, e->vertexCount);
+    glUniformMatrix4fv(glGetUniformLocation(e->program, "model"),    1, GL_FALSE, &(e->modelMatrix.m0[0]));
+    glUniformMatrix4fv(glGetUniformLocation(e->program, "viewProj"), 1, GL_FALSE, &(vp.m0[0]));
+
+    glDrawElements(GL_TRIANGLES, e->indexBufferSize, GL_UNSIGNED_INT, (void*)0);
 
     glUseProgram(0);
     glDisableVertexAttribArray(0);
@@ -80,7 +90,6 @@ void gl_tick(OpenGLState* state) {
 void gl_end(OpenGLState* state) {
   //later add in checking for level saving
   state->entities.free_list();
-  free(state->camera);
   free(state);
 }
 
