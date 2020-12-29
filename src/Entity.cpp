@@ -94,11 +94,7 @@ struct Entity {
   }
 
   void set_transform(const Transform& t) {
-    modelMatrix = 
-      mat4_transpose(
-	mat4_scaling(t.scale) * 
-	mat4_euler_rotation(t.rotation) *
-	mat4_translation(t.position));
+    modelMatrix = mat4_scaling(t.scale) * mat4_euler_rotation(t.rotation) * mat4_translation(t.position);
     this->transform = t;
   }
 
@@ -128,10 +124,10 @@ struct Entity {
 
 Entity* rect(OpenGLState* state, const Transform& t, const Vec3& color) {
   float32 vertices[] = {
-    -1.0f,  1.0f,  0.0f, 
-     1.0f,  1.0f,  0.0f,
-     1.0f, -1.0f,  0.0f,
-    -1.0f, -1.0f,  0.0f,
+    -1.0f,  1.0f,  0.0f,  0.0f,  0.0f, -1.0f,
+     1.0f,  1.0f,  0.0f,  0.0f,  0.0f, -1.0f,
+     1.0f, -1.0f,  0.0f,  0.0f,  0.0f, -1.0f,
+    -1.0f, -1.0f,  0.0f,  0.0f,  0.0f, -1.0f,
   };
 
   uint32 indices[] = {
@@ -143,7 +139,7 @@ Entity* rect(OpenGLState* state, const Transform& t, const Vec3& color) {
   attr.vertices = vertices;
   attr.vertArrSize = sizeof(vertices);
   attr.vertexCount = 4;
-  attr.vertexSize = 3;
+  attr.vertexSize = 3; //irr right now
   attr.transform = t;
 
   attr.indices = indices;
@@ -155,30 +151,56 @@ Entity* rect(OpenGLState* state, const Transform& t, const Vec3& color) {
 
 Entity* cube(OpenGLState* state, const Transform& t, const Vec3& color) {
   float32 vertices[] = {
-    -1.0f, -1.0f, -1.0f,
-     1.0f, -1.0f, -1.0f,
-     1.0f,  1.0f, -1.0f,
-    -1.0f,  1.0f, -1.0f,
+    // Front face
+    -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
+     1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
+     1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
+    -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
 
-    -1.0f, -1.0f,  1.0f,
-     1.0f, -1.0f,  1.0f,
-     1.0f,  1.0f,  1.0f,
-    -1.0f,  1.0f,  1.0f,
+    // Back face
+    -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
+    -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
+     1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
+     1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
+
+    // Top face
+    -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+    -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+     1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+     1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+
+    // Bottom face
+    -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f,
+     1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f,
+     1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f,
+    -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f,
+
+    // Right face
+     1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,
+     1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f,
+     1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,
+     1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,
+
+    // Left face
+    -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f,
+    -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f,
+    -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f,
+    -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f,
   };
 
   uint32 indices[] = {
-    0, 1, 3, 3, 1, 2,
-    1, 5, 2, 2, 5, 6,
-    5, 4, 6, 6, 4, 7,
-    4, 0, 7, 7, 0, 3,
-    3, 2, 7, 7, 2, 6,
-    4, 5, 0, 0, 5, 1
+     0,  1,  2,  0,  2,  3,
+     4,  5,  6,  4,  6,  7,
+     8,  9, 10,  8, 10, 11,
+    12, 13, 14, 12, 14, 15,
+    16, 17, 18, 16, 18, 19,
+    20, 21, 22, 20, 22, 23,
   };
 
   EntityAttributes attr;
   attr.vertices = vertices;
   attr.vertArrSize = sizeof(vertices);
-  attr.vertexCount = 8;
+  attr.vertexCount = 24;
   attr.vertexSize = 3;
   attr.transform = t;
 

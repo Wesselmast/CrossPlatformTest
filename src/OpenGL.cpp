@@ -41,6 +41,8 @@ OpenGLState* gl_start() {
   glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
   glClearDepth(1.0f);
   glEnable(GL_DEPTH_TEST);
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_FRONT);
   glDepthFunc(GL_LEQUAL);
   glShadeModel(GL_SMOOTH);
   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
@@ -61,8 +63,11 @@ void gl_tick(OpenGLState* state, Camera* c) {
     Entity* e = current->data;
 
     glBindBuffer(GL_ARRAY_BUFFER, e->vertexBuffer);
+
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, e->vertexSize, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 24, (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 24, (void*)12);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, e->indexBuffer);
 
@@ -73,8 +78,8 @@ void gl_tick(OpenGLState* state, Camera* c) {
     float32& b = e->color.z;
 
     glUniform3f(glGetUniformLocation(e->program, "objColor"), r, g, b);
-    glUniformMatrix4fv(glGetUniformLocation(e->program, "model"),    1, GL_FALSE, &(e->modelMatrix.m0[0]));
-    glUniformMatrix4fv(glGetUniformLocation(e->program, "viewProj"), 1, GL_FALSE, &(vp.m0[0]));
+    glUniformMatrix4fv(glGetUniformLocation(e->program, "model"),    1, GL_TRUE, &(e->modelMatrix.m0[0]));
+    glUniformMatrix4fv(glGetUniformLocation(e->program, "viewProj"), 1, GL_TRUE, &(vp.m0[0]));
 
     glDrawElements(GL_TRIANGLES, e->indexBufferSize, GL_UNSIGNED_INT, (void*)0);
 

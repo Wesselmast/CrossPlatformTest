@@ -1,18 +1,14 @@
-############ WELCOME TO THE TODO FOR THIS PROJECT ############ 
+############ WELCOME TO THE TODO FOR THIS PROJECT ############
 
 Priorities (in order):
-- Change math library so you dont need to transpose
-
-######### MAKE A DECISION ON THE GOAL OF THE PROJECT #########
-
-Another Game Engine
-- Textures
+- Interface for vertex layout
+- Mesh deformation
+- Importing textures
 - Importing meshes
 
-Terrain editor
-- Mesh deformation
+#################### GOAL OF THE PROJECT #####################
 
-Weird projections
-- Projection math!
+http://procworld.blogspot.com/2011/07/political-landscape.html
 
-Other..
+I really want to make something like this. 
+Creating cities and countries on a terrain based on a couple of parameters.

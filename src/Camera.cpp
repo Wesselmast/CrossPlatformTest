@@ -8,7 +8,7 @@ struct Camera {
   Vec3 rotation;
 
   const Mat4 get_view_projection() const {
-    return mat4_transpose(viewMatrix * projMatrix);
+    return viewMatrix * projMatrix;
   }
 
   Mat4 calculate_projection(uint16 w, uint16 h) {
