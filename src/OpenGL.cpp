@@ -2,6 +2,7 @@
 #include "Types.cpp"
 #include "Math.cpp"
 #include "List.cpp"
+#include "Color.cpp"
 
 #define GLEW_STATIC
 
@@ -32,14 +33,19 @@ inline void set_rendermode(uint8 renderMode) {
   }
 }
 
+inline void set_background_color(int32 hex) {
+  Color c = hex_to_color(hex);
+  glClearColor(c.r, c.g, c.b, 1.0f);
+} 
+
 OpenGLState* gl_start() {
   if(glewInit() != GLEW_OK) {
     printf("glew is bogged!");
     return nullptr;
   }
 
-  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
   glClearDepth(1.0f);
+  set_background_color(0x2B2D42);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
   glCullFace(GL_FRONT);
@@ -73,9 +79,9 @@ void gl_tick(OpenGLState* state, Camera* c) {
 
     glUseProgram(e->program);
 
-    float32& r = e->color.x;
-    float32& g = e->color.y;
-    float32& b = e->color.z;
+    float32& r = e->color.r;
+    float32& g = e->color.g;
+    float32& b = e->color.b;
 
     glUniform3f(glGetUniformLocation(e->program, "objColor"), r, g, b);
     glUniformMatrix4fv(glGetUniformLocation(e->program, "model"),    1, GL_TRUE, &(e->modelMatrix.m0[0]));

@@ -2,6 +2,7 @@
 #include "Types.cpp"
 #include "Math.cpp"
 #include "File.cpp"
+#include "Color.cpp"
 
 struct EntityAttributes {
   float32* vertices;
@@ -12,7 +13,7 @@ struct EntityAttributes {
   uint32* indices;
   uint32 indArrSize;
 
-  Vec3 color;
+  int32 hexColor;
   Transform transform;
 };
 
@@ -26,7 +27,7 @@ struct Entity {
   uint32 indexBuffer;
   uint32 indexBufferSize;  
 
-  Vec3 color;
+  Color color;
   Mat4 modelMatrix;
   Transform transform;
   
@@ -99,7 +100,7 @@ struct Entity {
   }
 
   Entity* init(OpenGLState* state, EntityAttributes* attr) {
-    color = attr->color;
+    color = hex_to_color(attr->hexColor);
     vertexCount = attr->vertexCount;
     vertexSize = attr->vertexSize;
     indexBufferSize = attr->indArrSize / sizeof(uint32);
@@ -122,7 +123,7 @@ struct Entity {
   }
 };
 
-Entity* rect(OpenGLState* state, const Transform& t, const Vec3& color) {
+Entity* rect(OpenGLState* state, const Transform& t, int32 hexColor) {
   float32 vertices[] = {
     -1.0f,  1.0f,  0.0f,  0.0f,  0.0f, -1.0f,
      1.0f,  1.0f,  0.0f,  0.0f,  0.0f, -1.0f,
@@ -145,11 +146,11 @@ Entity* rect(OpenGLState* state, const Transform& t, const Vec3& color) {
   attr.indices = indices;
   attr.indArrSize = sizeof(indices);
 
-  attr.color = color;
+  attr.hexColor = hexColor;
   return ((Entity*)malloc(sizeof(Entity)))->init(state, &attr);
 }
 
-Entity* cube(OpenGLState* state, const Transform& t, const Vec3& color) {
+Entity* cube(OpenGLState* state, const Transform& t, int32 hexColor) {
   float32 vertices[] = {
     // Front face
     -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
@@ -207,6 +208,6 @@ Entity* cube(OpenGLState* state, const Transform& t, const Vec3& color) {
   attr.indices = indices;
   attr.indArrSize = sizeof(indices);
 
-  attr.color = color;
+  attr.hexColor = hexColor;
   return ((Entity*)malloc(sizeof(Entity)))->init(state, &attr);
 }

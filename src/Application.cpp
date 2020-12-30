@@ -10,12 +10,12 @@ AppState* app_start(OpenGLState* state, Input* input) {
   AppState* app = (AppState*)malloc(sizeof(AppState));
   app->camera = create_camera(state);
 
-  rect(state, {zero(),                zero(), one()},     { 63.0f/255.0f, 136.0f/255.0f, 197.0f/255.0f});
-  rect(state, {{ 1.0f,  4.0f, -1.0f}, zero(), one()},     {255.0f/255.0f, 210.0f/255.0f, 117.0f/255.0f});
-  rect(state, {{-4.0f, -2.0f,  3.0f}, zero(), one() * 3}, {104.0f/255.0f, 182.0f/255.0f, 132.0f/255.0f});
+  rect(state, {zero(),                zero(), one()},     0xFE5F55); 
+  rect(state, {{ 1.0f,  4.0f, -1.0f}, zero(), one()},     0x6665DD); 
+  rect(state, {{-4.0f, -2.0f,  3.0f}, zero(), one() * 3}, 0x0B7A75); 
 
   Transform playerT = {{4.0f, 2.0f, 0.0f}, {1.3f, 0.0f, 0.0f}, one() * 1.2f};
-  app->player = cube(state, playerT, {209.0f/255.0f, 64.0f/255.0f,  129.0f/255.0f});
+  app->player = cube(state, playerT, 0xD81E5B);
 
   register_key_down(input, KEY_F3, [](){ set_rendermode(RENDERMODE_WIREFRAME); });
   register_key_down(input, KEY_F4, [](){ set_rendermode(RENDERMODE_NORMAL);    });
