@@ -1,7 +1,7 @@
 ############ WELCOME TO THE TODO FOR THIS PROJECT ############
 
 Priorities (in order):
-- Interface for vertex layout
+- Interface for uniforms
 - Mesh deformation
 - Importing textures
 - Importing meshes

@@ -1,17 +1,23 @@
 #pragma once
+
 #include "Types.cpp"
 #include "Math.cpp"
 #include "File.cpp"
 #include "Color.cpp"
 
+#include <string>
+
 struct EntityAttributes {
   float32* vertices;
   uint32 vertexCount; 
-  uint32 vertexSize;
   uint32 vertArrSize;
+  uint8 vertexLayout;
   
   uint32* indices;
   uint32 indArrSize;
+  
+  std::string vertexShaderPath;
+  std::string fragmentShaderPath;
 
   int32 hexColor;
   Transform transform;
@@ -22,7 +28,7 @@ struct Entity {
   
   uint32 vertexBuffer;
   uint32 vertexCount;
-  uint32 vertexSize;
+  uint8 vertexLayout;
 
   uint32 indexBuffer;
   uint32 indexBufferSize;  
@@ -102,10 +108,10 @@ struct Entity {
   Entity* init(OpenGLState* state, EntityAttributes* attr) {
     color = hex_to_color(attr->hexColor);
     vertexCount = attr->vertexCount;
-    vertexSize = attr->vertexSize;
+    vertexLayout = attr->vertexLayout;
     indexBufferSize = attr->indArrSize / sizeof(uint32);
 
-    load_shaders("res/shaders/defaultV.glsl", "res/shaders/defaultF.glsl");
+    load_shaders(attr->vertexShaderPath.c_str(), attr->fragmentShaderPath.c_str());
 
     glGenBuffers(1, &vertexBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
@@ -140,8 +146,10 @@ Entity* rect(OpenGLState* state, const Transform& t, int32 hexColor) {
   attr.vertices = vertices;
   attr.vertArrSize = sizeof(vertices);
   attr.vertexCount = 4;
-  attr.vertexSize = 3; //irr right now
+  attr.vertexLayout = LAYOUT_POSITION_3D | LAYOUT_NORMAL; 
   attr.transform = t;
+  attr.vertexShaderPath   = "res/shaders/defaultV.glsl";
+  attr.fragmentShaderPath = "res/shaders/defaultF.glsl";
 
   attr.indices = indices;
   attr.indArrSize = sizeof(indices);
@@ -202,8 +210,10 @@ Entity* cube(OpenGLState* state, const Transform& t, int32 hexColor) {
   attr.vertices = vertices;
   attr.vertArrSize = sizeof(vertices);
   attr.vertexCount = 24;
-  attr.vertexSize = 3;
+  attr.vertexLayout = LAYOUT_POSITION_3D | LAYOUT_NORMAL; 
   attr.transform = t;
+  attr.vertexShaderPath   = "res/shaders/defaultV.glsl";
+  attr.fragmentShaderPath = "res/shaders/defaultF.glsl";
 
   attr.indices = indices;
   attr.indArrSize = sizeof(indices);
