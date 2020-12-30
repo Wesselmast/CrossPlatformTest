@@ -105,7 +105,7 @@ struct Entity {
     this->transform = t;
   }
 
-  Entity* init(OpenGLState* state, EntityAttributes* attr) {
+  Entity* reinit(EntityAttributes* attr) {
     color = hex_to_color(attr->hexColor);
     vertexCount = attr->vertexCount;
     vertexLayout = attr->vertexLayout;
@@ -123,8 +123,11 @@ struct Entity {
 
     transform = attr->transform;
     set_transform(transform);
+    return this;
+  }
 
-    state->entities.insert(this);
+  Entity* init(OpenGLState* state, EntityAttributes* attr) {
+    state->entities.insert(reinit(attr));
     return this;
   }
 };

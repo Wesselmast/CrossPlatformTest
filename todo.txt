@@ -1,8 +1,8 @@
 ############ WELCOME TO THE TODO FOR THIS PROJECT ############
 
 Priorities (in order):
-- Interface for uniforms
 - Mesh deformation
+- Interface for uniforms
 - Importing textures
 - Importing meshes
 

@@ -5,6 +5,7 @@
 #include "OpenGL.cpp"
 #include "Input.cpp"
 #include "Math.cpp"
+#include "Terrain.cpp"
 
 AppState* app_start(OpenGLState* state, Input* input) {
   AppState* app = (AppState*)malloc(sizeof(AppState));
@@ -14,8 +15,19 @@ AppState* app_start(OpenGLState* state, Input* input) {
   rect(state, {{ 1.0f,  4.0f, -1.0f}, zero(), one()},     0x6665DD); 
   rect(state, {{-4.0f, -2.0f,  3.0f}, zero(), one() * 3}, 0x0B7A75); 
 
-  Transform playerT = {{4.0f, 2.0f, 0.0f}, {1.3f, 0.0f, 0.0f}, one() * 1.2f};
+  Transform terrainT = {{0.0f, -20.0f, 0.0f}, {90.0f, 0.0f, 0.0f}, one() * 40.0f};
+  terrain(state, terrainT, 0x546811);
+
+  Transform playerT = {{4.0f, 2.0f, 0.0f}, zero(), one() * 1.2f};
   app->player = cube(state, playerT, 0xD81E5B);
+
+  Vec3 a = { -1.0f, -1.0f,  1.0f };
+  Vec3 b = {  1.0f, -1.0f,  1.0f };
+  Vec3 c = {  1.0f,  1.0f,  1.0f };
+
+  Vec3 v = vec3_normalize(vec3_cross(b - a, c - a));
+  printf("%f, %f, %f\n", v.x, v.y, v.z);
+
 
   register_key_down(input, KEY_F3, [](){ set_rendermode(RENDERMODE_WIREFRAME); });
   register_key_down(input, KEY_F4, [](){ set_rendermode(RENDERMODE_NORMAL);    });
