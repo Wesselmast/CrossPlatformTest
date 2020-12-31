@@ -1,7 +1,7 @@
 ############ WELCOME TO THE TODO FOR THIS PROJECT ############
 
 Priorities (in order):
-- Mesh deformation
+- Put normal uniform in vertex shader to the CPU
 - Interface for uniforms
 - Importing textures
 - Importing meshes

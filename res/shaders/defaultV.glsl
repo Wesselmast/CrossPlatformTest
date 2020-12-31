@@ -7,9 +7,10 @@ uniform mat4 viewProj;
 uniform mat4 model; 
 
 out vec3 fragNormal;
+out vec3 fragPos;
 
 void main() {
-  mat4 mvp = model * viewProj;
-  gl_Position = vec4(position, 1.0) * mvp;
-  fragNormal = normal;
+  fragPos = vec3(vec4(position, 1.0) * model); 
+  gl_Position = vec4(fragPos, 1.0) * viewProj;
+  fragNormal = mat3(transpose(inverse(model))) * normal; //inefficient, change to CPU later
 }
