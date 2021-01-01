@@ -1,13 +1,13 @@
 #pragma once
 
 #include "Entity.cpp"
-
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image/stb_image.h"
+#include "File.cpp"
 
 #include <vector>
 
-void set_triangle_normals(std::vector<float32>& vertices, int32 i1, int32 i2, int32 i3) {
+#define SMOOTH_NORMALS 1
+
+static inline void set_triangle_normals(std::vector<float32>& vertices, int32 i1, int32 i2, int32 i3) {
   i1 *= 6;
   i2 *= 6;
   i3 *= 6;
@@ -16,6 +16,21 @@ void set_triangle_normals(std::vector<float32>& vertices, int32 i1, int32 i2, in
   Vec3 b = {vertices[i2], vertices[i2 + 1], vertices[i2 + 2]};
   Vec3 c = {vertices[i3], vertices[i3 + 1], vertices[i3 + 2]};
 
+#if SMOOTH_NORMALS
+  Vec3 n = vec3_cross(b - a, c - a);
+
+  vertices[i1 + 3] += n.x; 
+  vertices[i1 + 4] += n.y; 
+  vertices[i1 + 5] += n.z; 
+
+  vertices[i2 + 3] += n.x; 
+  vertices[i2 + 4] += n.y; 
+  vertices[i2 + 5] += n.z; 
+  
+  vertices[i3 + 3] += n.x; 
+  vertices[i3 + 4] += n.y; 
+  vertices[i3 + 5] += n.z; 
+#else
   Vec3 n = vec3_normalize(vec3_cross(b - a, c - a));
 
   vertices[i1 + 3] = n.x; 
@@ -29,16 +44,39 @@ void set_triangle_normals(std::vector<float32>& vertices, int32 i1, int32 i2, in
   vertices[i3 + 3] = n.x; 
   vertices[i3 + 4] = n.y; 
   vertices[i3 + 5] = n.z; 
+#endif
 }
 
-Entity* terrain(OpenGLState* state, const Transform& t, int32 hexColor, int32 res = 256, float32 height = 3.0f) {
-  int32 w, h, c;
-  uint8* img = stbi_load("res/textures/depth.png", &w, &h, &c, 1);
+static inline void normalize_smooth_normals(std::vector<float32>& vertices, int32 i1, int32 i2, int32 i3) {
+  i1 *= 6;
+  i2 *= 6;
+  i3 *= 6;
+
+  Vec3 na = vec3_normalize({vertices[i1 + 3], vertices[i1 + 4], vertices[i1 + 5]});
+  Vec3 nb = vec3_normalize({vertices[i2 + 3], vertices[i2 + 4], vertices[i2 + 5]});
+  Vec3 nc = vec3_normalize({vertices[i3 + 3], vertices[i3 + 4], vertices[i3 + 5]});
+
+  vertices[i1 + 3] = na.x;
+  vertices[i1 + 4] = na.y;
+  vertices[i1 + 5] = na.z;
+
+  vertices[i2 + 3] = nb.x;
+  vertices[i2 + 4] = nb.y;
+  vertices[i2 + 5] = nb.z;
+
+  vertices[i3 + 3] = nc.x;
+  vertices[i3 + 4] = nc.y;
+  vertices[i3 + 5] = nc.z;
+}
+
+static Entity* terrain(OpenGLState* state, const Transform& t, int32 hexColor, int32 res = 256, float32 height = 3.0f) {
+  int32 w, h;
+  uint8* img = load_image("res/textures/depth.png", &w, &h, 1);
 
   int32 scale = 20;
   int32 resSqr = res * res;
 
-  std::vector<float32> vertices(resSqr * 6);
+  std::vector<float32> vertices(resSqr * 6, 0.0f);
   std::vector<uint32>  indices;
 
   int32 i = 0;
@@ -78,7 +116,13 @@ Entity* terrain(OpenGLState* state, const Transform& t, int32 hexColor, int32 re
     set_triangle_normals(vertices, indices[i], indices[i + 1], indices[i + 2]);
   }
 
-  stbi_image_free(img);
+#if SMOOTH_NORMALS
+  for(int32 i = 0; i < indices.size(); i += 3) {
+    normalize_smooth_normals(vertices, indices[i], indices[i + 1], indices[i + 2]);
+  }
+#endif
+
+  free_image(img);
   
   EntityAttributes attr;
   attr.vertices = &vertices[0];

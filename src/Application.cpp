@@ -16,7 +16,7 @@ AppState* app_start(OpenGLState* state, Input* input) {
   rect(state, {{-4.0f, -2.0f,  3.0f}, zero(), one() * 3}, 0x0B7A75); 
 
   Transform terrainT = {{0.0f, -30.0f, 0.0f}, zero(), one() * 7};
-  terrain(state, terrainT, 0x546811, 1024, 2.5f);
+  terrain(state, terrainT, 0x546811, 512, 2.5f);
 
   Transform playerT = {{4.0f, 2.0f, 0.0f}, zero(), one() * 1.2f};
   app->player = cube(state, playerT, 0xD81E5B);
