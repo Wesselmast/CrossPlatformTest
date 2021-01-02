@@ -20,6 +20,7 @@ struct Camera {
     projMatrix = calculate_projection(state->windowWidth, state->windowHeight);
     this->position = position;
     this->rotation = rotation;
+    state->vp = get_view_projection();
   }
 
   Camera* init(OpenGLState* state) {

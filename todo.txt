@@ -1,8 +1,6 @@
 ############ WELCOME TO THE TODO FOR THIS PROJECT ############
 
 Priorities (in order):
-- Put normal uniform in vertex shader to the CPU
-- Interface for uniforms
 - Painting the terrain vertices
 - Importing textures
 - Importing meshes

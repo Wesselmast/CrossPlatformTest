@@ -24,6 +24,8 @@ struct EntityAttributes {
 };
 
 struct Entity {
+  List<Uniform*>* uniforms;
+
   uint32 program;
   
   uint32 vertexBuffer;
@@ -35,8 +37,9 @@ struct Entity {
 
   Color color;
   Mat4 modelMatrix;
+  Mat4 normalMatrix;
   Transform transform;
-  
+
   void load_shaders(const char* vPath, const char* fPath) {
     uint32 vertexShader   = glCreateShader(GL_VERTEX_SHADER);
     uint32 fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -102,6 +105,7 @@ struct Entity {
 
   void set_transform(const Transform& t) {
     modelMatrix = mat4_scaling(t.scale) * mat4_euler_rotation(t.rotation) * mat4_translation(t.position);
+    normalMatrix = mat4_transpose(mat4_inverse(modelMatrix)); 
     this->transform = t;
   }
 
@@ -123,14 +127,25 @@ struct Entity {
 
     transform = attr->transform;
     set_transform(transform);
+
+    uniforms = (List<Uniform*>*)malloc(sizeof(List<Uniform*>));
     return this;
   }
 
   Entity* init(OpenGLState* state, EntityAttributes* attr) {
-    state->entities.insert(reinit(attr));
+    state->entities.insert(reinit(attr));   
     return this;
   }
 };
+
+void destroy_entity_partial(Entity* entity) {
+  uniform_free_list(entity->uniforms);
+}
+
+void destroy_entity_full(OpenGLState* state, Entity* entity) {
+  destroy_entity_partial(entity);
+  state->entities.remove(entity);
+}
 
 Entity* rect(OpenGLState* state, const Transform& t, int32 hexColor) {
   float32 vertices[] = {
@@ -158,7 +173,13 @@ Entity* rect(OpenGLState* state, const Transform& t, int32 hexColor) {
   attr.indArrSize = sizeof(indices);
 
   attr.hexColor = hexColor;
-  return ((Entity*)malloc(sizeof(Entity)))->init(state, &attr);
+  Entity* e = ((Entity*)malloc(sizeof(Entity)))->init(state, &attr);
+
+  e->uniforms->insert(uniform_create_color("objColor",  &e->color));
+  e->uniforms->insert(uniform_create_mat4 ("model",     &e->modelMatrix));
+  e->uniforms->insert(uniform_create_mat4 ("normalMat", &e->normalMatrix));
+
+  return e;
 }
 
 Entity* cube(OpenGLState* state, const Transform& t, int32 hexColor) {
@@ -222,5 +243,11 @@ Entity* cube(OpenGLState* state, const Transform& t, int32 hexColor) {
   attr.indArrSize = sizeof(indices);
 
   attr.hexColor = hexColor;
-  return ((Entity*)malloc(sizeof(Entity)))->init(state, &attr);
+  Entity* e = ((Entity*)malloc(sizeof(Entity)))->init(state, &attr);
+
+  e->uniforms->insert(uniform_create_color("objColor",  &e->color));
+  e->uniforms->insert(uniform_create_mat4 ("model",     &e->modelMatrix));
+  e->uniforms->insert(uniform_create_mat4 ("normalMat", &e->normalMatrix));
+
+  return e; 
 }

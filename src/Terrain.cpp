@@ -137,6 +137,12 @@ static Entity* terrain(OpenGLState* state, const Transform& t, int32 hexColor, i
   attr.indArrSize = indices.size() * sizeof(uint32);
 
   attr.hexColor = hexColor;
-  return ((Entity*)malloc(sizeof(Entity)))->init(state, &attr);
+  Entity* e = ((Entity*)malloc(sizeof(Entity)))->init(state, &attr);
+
+  e->uniforms->insert(uniform_create_color("objColor",  &e->color));
+  e->uniforms->insert(uniform_create_mat4 ("model",     &e->modelMatrix));
+  e->uniforms->insert(uniform_create_mat4 ("normalMat", &e->normalMatrix));
+
+  return e; 
 }
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Types.cpp"
+
 template<typename T>
 struct Node {
   Node<T>* next = nullptr;
@@ -9,12 +11,14 @@ struct Node {
 template<typename T>
 struct List {
   Node<T>* head = nullptr;
-  
+  int32 length = 0;
+
   void insert(T data) {
     Node<T>* node = (Node<T>*)malloc(sizeof(Node<T>));
     node->data = data;
     node->next = head;
     head = node;
+    ++length;
   }
 
   Node<T>* get_tail(Node<T>* targetHead) {
@@ -31,6 +35,7 @@ struct List {
 
     Node<T>* tail = get_tail(head);
     tail->next = node;
+    ++length;
   }
 
   void remove(T data) {
@@ -41,6 +46,7 @@ struct List {
     if(current->data == data) {
       head = current->next;
       free(current);
+      --length;
       return;
     }
 
@@ -48,6 +54,7 @@ struct List {
       if(current->data == data) {
 	last->next = current->next;
 	free(current);
+	--length;
 	return;
       }
       last = current;
@@ -63,6 +70,7 @@ struct List {
       free(current);
       current = next;
     }
+    length = 0;
     head = nullptr;
   }
 

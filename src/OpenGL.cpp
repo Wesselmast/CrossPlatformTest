@@ -10,6 +10,8 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
+#include "Uniforms.cpp"
+
 #define LAYOUT_POSITION_3D 0x01
 #define LAYOUT_POSITION_2D 0x02
 #define LAYOUT_NORMAL      0x04
@@ -51,6 +53,9 @@ struct Entity;
 
 struct OpenGLState {
   List<Entity*> entities;
+  List<Uniform*>* globalUniforms;
+
+  Mat4 vp;
   uint16 windowWidth;
   uint16 windowHeight;
 };
@@ -90,34 +95,29 @@ OpenGLState* gl_start() {
   glShadeModel(GL_SMOOTH);
   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
-  return (OpenGLState*)malloc(sizeof(OpenGLState));
+  OpenGLState* state = (OpenGLState*)malloc(sizeof(OpenGLState));
+  state->globalUniforms = (List<Uniform*>*)malloc(sizeof(List<Uniform*>));
+  state->globalUniforms->insert(uniform_create_mat4("viewProj", &state->vp));
+
+  return state;
 }
 
 void gl_tick(OpenGLState* state, Camera* c) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  uint16& w = state->windowWidth;
-  uint16& h = state->windowHeight;
-  glViewport(0, 0, w, h);
-  
-  Mat4 vp = c->get_view_projection();
   Node<Entity*>* current = state->entities.head;
   while(current) {
     Entity* e = current->data;
-
+    
     glBindBuffer(GL_ARRAY_BUFFER, e->vertexBuffer);
     activate_layout(e->vertexLayout);
-
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, e->indexBuffer);
-    glUseProgram(e->program);
 
-    float32& r = e->color.r;
-    float32& g = e->color.g;
-    float32& b = e->color.b;
+    uint32& program = e->program;
+    glUseProgram(program);
 
-    glUniform3f(glGetUniformLocation(e->program, "objColor"), r, g, b);
-    glUniformMatrix4fv(glGetUniformLocation(e->program, "model"),    1, GL_TRUE, &(e->modelMatrix.m0[0]));
-    glUniformMatrix4fv(glGetUniformLocation(e->program, "viewProj"), 1, GL_TRUE, &(vp.m0[0]));
+    uniform_tick_list(state->globalUniforms, program); 
+    uniform_tick_list(e->uniforms, program);
 
     glDrawElements(GL_TRIANGLES, e->indexBufferSize, GL_UNSIGNED_INT, (void*)0);
 
@@ -126,13 +126,24 @@ void gl_tick(OpenGLState* state, Camera* c) {
 
     current = current->next;
   }
-
-  glFlush();
 }
 
 void gl_end(OpenGLState* state) {
   //later add in checking for level saving
+
+  Node<Entity*>* current = state->entities.head;
+  while(current) {
+    destroy_entity_partial(current->data);
+    current = current->next;
+  }
+
   state->entities.free_list();
+  uniform_free_list(state->globalUniforms);
   free(state);
 }
 
+void gl_resize(OpenGLState* state, uint16 w, uint16 h) {
+  state->windowWidth = w;
+  state->windowHeight = h;
+  glViewport(0, 0, w, h);
+} 

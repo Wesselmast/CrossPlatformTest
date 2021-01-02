@@ -11,8 +11,7 @@ inline void expose(OpenGLState* state, Display* d, Window& w) {
   XWindowAttributes wa;
   XGetWindowAttributes(d, w, &wa);
   
-  state->windowWidth = wa.width;
-  state->windowHeight = wa.height;
+  gl_resize(state, wa.width, wa.height);
 }
 
 inline void get_mouse_position(Display* d, Window& w, int32* x, int32* y) {
