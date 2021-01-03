@@ -1,6 +1,8 @@
 ############ WELCOME TO THE TODO FOR THIS PROJECT ############
 
 Priorities (in order):
+- Cube normals are obviously wrong. Look into lighting tomorrow by passing it as a global uniform
+- 
 - Painting the terrain vertices
 - Importing textures
 - Importing meshes

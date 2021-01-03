@@ -69,7 +69,7 @@ static inline void normalize_smooth_normals(std::vector<float32>& vertices, int3
   vertices[i3 + 5] = nc.z;
 }
 
-static Entity* terrain(OpenGLState* state, const Transform& t, int32 hexColor, int32 res = 256, float32 height = 3.0f) {
+static Entity* terrain(OpenGLState* state, const Transform& t, int32 res = 256, float32 height = 3.0f) {
   int32 w, h;
   uint8* img = load_image("res/textures/depth.png", &w, &h, 1);
 
@@ -130,16 +130,14 @@ static Entity* terrain(OpenGLState* state, const Transform& t, int32 hexColor, i
   attr.vertexCount = resSqr;
   attr.vertexLayout = LAYOUT_POSITION_3D | LAYOUT_NORMAL; 
   attr.transform = t;
-  attr.vertexShaderPath   = "res/shaders/defaultV.glsl";
-  attr.fragmentShaderPath = "res/shaders/defaultF.glsl";
+  attr.vertexShaderPath   = "res/shaders/terrainV.glsl";
+  attr.fragmentShaderPath = "res/shaders/terrainF.glsl";
 
   attr.indices = &indices[0];
   attr.indArrSize = indices.size() * sizeof(uint32);
 
-  attr.hexColor = hexColor;
   Entity* e = ((Entity*)malloc(sizeof(Entity)))->init(state, &attr);
 
-  e->uniforms->insert(uniform_create_color("objColor",  &e->color));
   e->uniforms->insert(uniform_create_mat4 ("model",     &e->modelMatrix));
   e->uniforms->insert(uniform_create_mat4 ("normalMat", &e->normalMatrix));
 

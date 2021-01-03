@@ -19,7 +19,6 @@ struct EntityAttributes {
   std::string vertexShaderPath;
   std::string fragmentShaderPath;
 
-  int32 hexColor;
   Transform transform;
 };
 
@@ -35,7 +34,6 @@ struct Entity {
   uint32 indexBuffer;
   uint32 indexBufferSize;  
 
-  Color color;
   Mat4 modelMatrix;
   Mat4 normalMatrix;
   Transform transform;
@@ -110,7 +108,6 @@ struct Entity {
   }
 
   Entity* reinit(EntityAttributes* attr) {
-    color = hex_to_color(attr->hexColor);
     vertexCount = attr->vertexCount;
     vertexLayout = attr->vertexLayout;
     indexBufferSize = attr->indArrSize / sizeof(uint32);
@@ -172,10 +169,10 @@ Entity* rect(OpenGLState* state, const Transform& t, int32 hexColor) {
   attr.indices = indices;
   attr.indArrSize = sizeof(indices);
 
-  attr.hexColor = hexColor;
   Entity* e = ((Entity*)malloc(sizeof(Entity)))->init(state, &attr);
 
-  e->uniforms->insert(uniform_create_color("objColor",  &e->color));
+  Color color = hex_to_color(hexColor);
+  e->uniforms->insert(uniform_create_color("objColor",  &color, true));
   e->uniforms->insert(uniform_create_mat4 ("model",     &e->modelMatrix));
   e->uniforms->insert(uniform_create_mat4 ("normalMat", &e->normalMatrix));
 
@@ -197,28 +194,28 @@ Entity* cube(OpenGLState* state, const Transform& t, int32 hexColor) {
      1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
 
     // Top face
-    -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-    -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-     1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-     1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+    -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f,
+    -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f,
+     1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f,
+     1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f,
 
     // Bottom face
-    -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f,
-     1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f,
-     1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f,
-    -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f,
+    -1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,
+     1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,
+     1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,
+    -1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,
 
     // Right face
-     1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,
-     1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f,
-     1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,
-     1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,
+     1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f,
+     1.0f,  1.0f, -1.0f,  0.0f, -1.0f,  0.0f,
+     1.0f,  1.0f,  1.0f,  0.0f, -1.0f,  0.0f,
+     1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f,
 
     // Left face
-    -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f,
-    -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f,
-    -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f,
-    -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f,
+    -1.0f, -1.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+    -1.0f, -1.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+    -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+    -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f,
   };
 
   uint32 indices[] = {
@@ -242,10 +239,10 @@ Entity* cube(OpenGLState* state, const Transform& t, int32 hexColor) {
   attr.indices = indices;
   attr.indArrSize = sizeof(indices);
 
-  attr.hexColor = hexColor;
   Entity* e = ((Entity*)malloc(sizeof(Entity)))->init(state, &attr);
-
-  e->uniforms->insert(uniform_create_color("objColor",  &e->color));
+  
+  Color color = hex_to_color(hexColor);
+  e->uniforms->insert(uniform_create_color("objColor",  &color, true));
   e->uniforms->insert(uniform_create_mat4 ("model",     &e->modelMatrix));
   e->uniforms->insert(uniform_create_mat4 ("normalMat", &e->normalMatrix));
 

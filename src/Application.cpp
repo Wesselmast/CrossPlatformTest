@@ -16,7 +16,7 @@ AppState* app_start(OpenGLState* state, Input* input) {
   rect(state, {{-4.0f, -2.0f,  3.0f}, zero(), one() * 3}, 0x0B7A75); 
 
   Transform terrainT = {{0.0f, -30.0f, 0.0f}, zero(), one() * 7};
-  terrain(state, terrainT, 0x546811, 512, 2.5f);
+  terrain(state, terrainT, 512, 2.5f);
 
   Transform playerT = {{4.0f, 2.0f, 0.0f}, zero(), one() * 1.2f};
   app->player = cube(state, playerT, 0xD81E5B);
@@ -66,10 +66,10 @@ bool app_tick(OpenGLState* state, Input* input, AppState* app, float64 dt, float
   Vec3& pPos = p->transform.position;
   Vec3& pRot = p->transform.rotation;
 
-  float32 speed = 2.0f, dist = 2.0f, rot = 12.0f;
-  pPos.x = sin(time * speed) * dist;
-  pRot.x = sin(time * speed) * rot;
-  pRot.z = cos(time * speed) * rot;
+  float32 speed = 8.0f, dist = 2.0f, rot = 12.0f;
+  //pPos.x = sin(time * speed) * dist;
+  //pRot.x = sin(time * speed) * rot;
+  pRot.y += speed * dt; //cos(time * speed) * rot;
   p->set_transform(p->transform);
 
   return is_down(input, KEY_ESCAPE);

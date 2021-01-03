@@ -12,7 +12,8 @@ typedef void(*fptr_uniformtick)(int32, void*);
 struct Uniform {
   char name[64];
   fptr_uniformtick tick;
-  uint8* data;
+  void* data;
+  uint8 oneTime;
 };
 
 inline void uniform_tick_vec3(int32 location, void* data) {
@@ -29,28 +30,32 @@ inline void uniform_tick_mat4(int32 location, void* data) {
   glUniformMatrix4fv(location, 1, GL_TRUE, (float32*)data); 
 }
 
-Uniform* uniform_create_color(const char* name, Color* data) {
+Uniform* uniform_create_generic(const char* name, void* data, uint32 dataSize, bool oneTime, fptr_uniformtick tick) {
   Uniform* uniform = (Uniform*)malloc(sizeof(Uniform));
+
   strcpy(uniform->name, name);
-  uniform->tick = &uniform_tick_color;
-  uniform->data = (uint8*)data;
+  uniform->tick = tick;
+  uniform->oneTime = oneTime;
+
+  if(oneTime) {
+    uniform->data = malloc(dataSize);
+    memcpy(uniform->data, data, dataSize);
+  }
+  else uniform->data = data;
+  
   return uniform;
 }
 
-Uniform* uniform_create_vec3(const char* name, Vec3* data) {
-  Uniform* uniform = (Uniform*)malloc(sizeof(Uniform));
-  strcpy(uniform->name, name);
-  uniform->tick = &uniform_tick_vec3;
-  uniform->data = (uint8*)data;
-  return uniform;
+Uniform* uniform_create_color(const char* name, Color* data, bool oneTime = false) {
+  return uniform_create_generic(name, (void*)data, sizeof(Color), oneTime, &uniform_tick_color);
 }
 
-Uniform* uniform_create_mat4(const char* name, Mat4* data) {
-  Uniform* uniform = (Uniform*)malloc(sizeof(Uniform));
-  strcpy(uniform->name, name);
-  uniform->tick = &uniform_tick_mat4;
-  uniform->data = (uint8*)data;
-  return uniform;
+Uniform* uniform_create_vec3(const char* name, Vec3* data, bool oneTime = false) {
+  return uniform_create_generic(name, (void*)data, sizeof(Vec3), oneTime, &uniform_tick_vec3);
+}
+
+Uniform* uniform_create_mat4(const char* name, Mat4* data, bool oneTime = false) {
+  return uniform_create_generic(name, (void*)data, sizeof(Mat4), oneTime, &uniform_tick_mat4);
 }
 
 inline void uniform_tick_list(List<Uniform*>* uniforms, int32 program) {
@@ -70,6 +75,8 @@ void uniform_free_list(List<Uniform*>* uniforms) {
 
   for(int32 i = 0; i < len; ++i) {
     next = current->next;
+    Uniform* uniform = current->data;
+    if(uniform->oneTime) free(uniform->data);
     free(current);
     current = next;
   }
