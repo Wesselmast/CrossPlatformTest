@@ -15,8 +15,8 @@ AppState* app_start(OpenGLState* state, Input* input) {
   rect(state, {{ 1.0f,  4.0f, -1.0f}, zero(), one()},     0x6665DD); 
   rect(state, {{-4.0f, -2.0f,  3.0f}, zero(), one() * 3}, 0x0B7A75); 
 
-  Transform terrainT = {{0.0f, -30.0f, 0.0f}, zero(), one() * 7};
-  terrain(state, terrainT, 512, 2.5f);
+  Transform terrainT = {{500.0f, -300.0f, 100.0f}, zero(), one() * 100};
+  terrain(state, terrainT, 2048, 2.5f);
 
   Transform playerT = {{4.0f, 2.0f, 0.0f}, zero(), one() * 1.2f};
   app->player = cube(state, playerT, 0xD81E5B);
@@ -39,10 +39,11 @@ bool app_tick(OpenGLState* state, Input* input, AppState* app, float64 dt, float
   float32 yr = c->rotation.y;
   float32 zr = c->rotation.z;
 
-  const float32 s  = 10.0f * dt;
+  const float32 sr = 10.0f  * dt;
+  const float32 s  = 100.0f * dt;
 
-  float32 dMouseX = input->mouseXDiff * s;
-  float32 dMouseY = input->mouseYDiff * s; 
+  float32 dMouseX = input->mouseXDiff * sr;
+  float32 dMouseY = input->mouseYDiff * sr; 
 
   Vec3 camFront = vec3_normalize(vec3_forward(-c->rotation));
   Vec3 camRight = vec3_normalize(vec3_right  (-c->rotation));

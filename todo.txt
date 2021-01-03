@@ -2,7 +2,8 @@
 
 Priorities (in order):
 - Cube normals are obviously wrong. Look into lighting tomorrow by passing it as a global uniform
-- 
+- Sometimes input lags because of framerate issues. This can be because it's not desync. Look into this (linux only issue)
+- Find or make a heightmap that's at least 4k for neat pictures
 - Painting the terrain vertices
 - Importing textures
 - Importing meshes

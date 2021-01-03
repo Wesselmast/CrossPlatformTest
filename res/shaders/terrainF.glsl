@@ -15,10 +15,10 @@ void main() {
   vec3 diffuse = max(dot(norm, lightDir), 0.0) * lightColor;
 
   vec3 objColor;
-  if(fragPos.y > 2.3) {
+  if(fragPos.y > 2.1) {
     objColor = vec3(1.0, 1.0, 1.0);
   }
-  else if(fragPos.y > 0.6) {
+  else if(fragPos.y > 0.15) {
     objColor = vec3(0.4196, 0.4431, 0.4941); 
   }
   else {

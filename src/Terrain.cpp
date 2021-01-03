@@ -71,7 +71,7 @@ static inline void normalize_smooth_normals(std::vector<float32>& vertices, int3
 
 static Entity* terrain(OpenGLState* state, const Transform& t, int32 res = 256, float32 height = 3.0f) {
   int32 w, h;
-  uint8* img = load_image("res/textures/depth.png", &w, &h, 1);
+  uint8* img = load_image("res/textures/depth4.png", &w, &h, 1);
 
   int32 scale = 20;
   int32 resSqr = res * res;
