@@ -1,11 +1,11 @@
 ############ WELCOME TO THE TODO FOR THIS PROJECT ############
 
 Priorities (in order):
-- Cube normals are obviously wrong. Look into lighting tomorrow by passing it as a global uniform
 - Sometimes input lags because of framerate issues. This can be because it's not desync. Look into this (linux only issue)
-- Find or make a heightmap that's at least 4k for neat pictures
-- Painting the terrain vertices
+- Cube normals are obviously wrong. Look into passing light positions as a global uniform
+- Add support for PBR lighting & multiple lights
 - Importing textures
+- Generating terrain via user input instead of 
 - Importing meshes
 
 #################### GOAL OF THE PROJECT #####################
