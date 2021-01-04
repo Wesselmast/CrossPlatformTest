@@ -6,12 +6,14 @@ in vec3 fragPosLocal;
 
 out vec4 color;
 
+uniform vec3 lightPos;
+
 void main() {
   vec3 lightColor = vec3(0.937, 0.937, 0.856);
   vec3 ambientColor = lightColor * 0.18;
 
   vec3 norm = normalize(fragNormal);
-  vec3 lightDir = normalize(vec3(0.0, -8.0, 4.0) - fragPosLocal);
+  vec3 lightDir = normalize(lightPos - fragPosLocal);
   vec3 diffuse = max(dot(norm, lightDir), 0.0) * lightColor;
 
   vec3 objColor;

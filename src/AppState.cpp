@@ -4,5 +4,6 @@
 
 struct AppState {
   Entity* player;
+  Entity* light;
   Camera* camera;
 };

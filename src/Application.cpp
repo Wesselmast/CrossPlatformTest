@@ -11,15 +11,16 @@ AppState* app_start(OpenGLState* state, Input* input) {
   AppState* app = (AppState*)malloc(sizeof(AppState));
   app->camera = create_camera(state);
 
-  rect(state, {zero(),                zero(), one()},     0xFE5F55); 
-  rect(state, {{ 1.0f,  4.0f, -1.0f}, zero(), one()},     0x6665DD); 
-  rect(state, {{-4.0f, -2.0f,  3.0f}, zero(), one() * 3}, 0x0B7A75); 
+//  rect(state, {zero(),                zero(), one()},     0xFE5F55); 
+//  rect(state, {{ 1.0f,  4.0f, -1.0f}, zero(), one()},     0x6665DD); 
+//  rect(state, {{-4.0f, -2.0f,  3.0f}, zero(), one() * 3}, 0x0B7A75); 
 
   Transform terrainT = {{500.0f, -300.0f, 100.0f}, zero(), one() * 100};
   terrain(state, terrainT, 2048, 2.5f);
 
-  Transform playerT = {{4.0f, 2.0f, 0.0f}, zero(), one() * 1.2f};
+  Transform playerT = {{0.0f, 2.0f, 0.0f}, zero(), one() * 1.2f};
   app->player = cube(state, playerT, 0xD81E5B);
+  app->light = cube(state, {{700.0f, -100.0f, 200.0f}, zero(), one() * 6.0f}, 0xFFFFFF);
 
   register_key_down(input, KEY_F3, [](){ set_rendermode(RENDERMODE_WIREFRAME); });
   register_key_down(input, KEY_F4, [](){ set_rendermode(RENDERMODE_NORMAL);    });
@@ -67,11 +68,21 @@ bool app_tick(OpenGLState* state, Input* input, AppState* app, float64 dt, float
   Vec3& pPos = p->transform.position;
   Vec3& pRot = p->transform.rotation;
 
-  float32 speed = 8.0f, dist = 2.0f, rot = 12.0f;
-  //pPos.x = sin(time * speed) * dist;
-  //pRot.x = sin(time * speed) * rot;
-  pRot.y += speed * dt; //cos(time * speed) * rot;
+  float32 speed = 1.0f, dist = 250.0f;
+  pRot.z += speed * dt *  5;
+  pRot.x += speed * dt * 10;
+  pRot.y += speed * dt * 15;
   p->set_transform(p->transform);
+
+  Entity* l = app->light;
+  Vec3 lPos = l->transform.position;
+
+  lPos.y = sin(time * speed) * dist;
+  lPos.x = sin(time * speed) * dist;
+  lPos.z = cos(time * speed) * dist;
+
+  app->light->set_position(lPos);
+  state->lightPos = lPos;
 
   return is_down(input, KEY_ESCAPE);
 }

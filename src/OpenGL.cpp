@@ -54,8 +54,9 @@ struct Entity;
 struct OpenGLState {
   List<Entity*> entities;
   List<Uniform*>* globalUniforms;
-
+  
   Mat4 vp;
+  Vec3 lightPos;
   uint16 windowWidth;
   uint16 windowHeight;
 };
@@ -97,7 +98,9 @@ OpenGLState* gl_start() {
 
   OpenGLState* state = (OpenGLState*)malloc(sizeof(OpenGLState));
   state->globalUniforms = (List<Uniform*>*)malloc(sizeof(List<Uniform*>));
+
   state->globalUniforms->insert(uniform_create_mat4("viewProj", &state->vp));
+  state->globalUniforms->insert(uniform_create_vec3("lightPos", &state->lightPos));
 
   return state;
 }

@@ -69,7 +69,7 @@ int main() {
   while(1) {
     auto start = timer.now();
 
-    if(XPending(d) > 0) {
+    while(XPending(d) > 0) {
       XNextEvent(d, &e);
       switch(e.type) {
 	case Expose:        expose(state, d, w); break;
