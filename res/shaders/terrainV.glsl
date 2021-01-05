@@ -14,7 +14,6 @@ out vec3 fragPos;
 void main() {
   fragPosLocal = vec3(vec4(position, 1.0) * model); 
   fragPos = position;
-  fragNormal = mat3(normalMat) * normal;
-
+  fragNormal = normal;
   gl_Position = vec4(fragPosLocal, 1.0) * viewProj;
 }
