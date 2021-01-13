@@ -4,7 +4,9 @@
 #include "Math.cpp"
 #include "File.cpp"
 #include "Color.cpp"
+#include "MeshGeneration.cpp"
 
+#include <vector>
 #include <string>
 
 struct EntityAttributes {
@@ -101,6 +103,14 @@ struct Entity {
     set_transform(transform);
   }
 
+  void set_cullface_front() {
+    glCullFace(GL_FRONT);
+  }
+
+  void set_cullface_back() {
+    glCullFace(GL_BACK);
+  }
+
   void set_transform(const Transform& t) {
     modelMatrix = mat4_scaling(t.scale) * mat4_euler_rotation(t.rotation) * mat4_translation(t.position);
     normalMatrix = mat4_transpose(mat4_inverse(modelMatrix)); 
@@ -136,10 +146,12 @@ struct Entity {
 };
 
 void destroy_entity_partial(Entity* entity) {
+  if(!entity) return;
   uniform_free_list(entity->uniforms);
 }
 
-void destroy_entity_full(OpenGLState* state, Entity* entity) {
+void destroy_entity(OpenGLState* state, Entity* entity) {
+  if(!entity) return;
   destroy_entity_partial(entity);
   state->entities.remove(entity);
 }
@@ -238,6 +250,51 @@ Entity* cube(OpenGLState* state, const Transform& t, int32 hexColor) {
 
   attr.indices = indices;
   attr.indArrSize = sizeof(indices);
+
+  Entity* e = ((Entity*)malloc(sizeof(Entity)))->init(state, &attr);
+  
+  Color color = hex_to_color(hexColor);
+  e->uniforms->insert(uniform_create_color("objColor",  &color, true));
+  e->uniforms->insert(uniform_create_mat4 ("model",     &e->modelMatrix));
+  e->uniforms->insert(uniform_create_mat4 ("normalMat", &e->normalMatrix));
+
+  return e; 
+}
+
+Entity* sphere(OpenGLState* state, const Transform& t, int32 hexColor, int32 res = 50) {
+  int32 resSqr = res * res;
+
+  std::vector<float32> vertices(resSqr * 6, 0.0f);
+  std::vector<uint32>  indices;
+
+  int32 i = 0;
+  for(int32 z = 0; z < res; ++z) {
+    float32 angle1 = z * pi() / (res - 1);
+    for(int32 x = 0; x < res; ++x) {
+      float32 angle2 = x * (pi() * 2) / (res - 1);
+
+      vertices[(i * 6) + 0] = sin(angle1) * cos(angle2);
+      vertices[(i * 6) + 1] = cos(angle1);
+      vertices[(i * 6) + 2] = sin(angle1) * sin(angle2);
+
+      generate_index(indices, i, z, res, true);
+      ++i;
+    }
+  }
+
+  generate_normals(vertices, indices);
+
+  EntityAttributes attr;
+  attr.vertices = &vertices[0];
+  attr.vertArrSize = resSqr * 6 * sizeof(float32);
+  attr.vertexCount = resSqr;
+  attr.vertexLayout = LAYOUT_POSITION_3D | LAYOUT_NORMAL; 
+  attr.transform = t;
+  attr.vertexShaderPath   = "res/shaders/defaultV.glsl";
+  attr.fragmentShaderPath = "res/shaders/defaultF.glsl";
+
+  attr.indices = &indices[0];
+  attr.indArrSize = indices.size() * sizeof(uint32);
 
   Entity* e = ((Entity*)malloc(sizeof(Entity)))->init(state, &attr);
   

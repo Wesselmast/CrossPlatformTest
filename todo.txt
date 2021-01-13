@@ -4,10 +4,10 @@ Priorities (in order):
 - Add support for PBR lighting & multiple lights
 - Make 2d perlin with octaves
 - Generate colormap for terrain
-
 - Modifying terrain based on user input
-- Importing textures
+
 - Importing meshes
+- Texturing meshes
 
 #################### GOAL OF THE PROJECT #####################
 
