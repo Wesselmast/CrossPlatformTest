@@ -1,7 +1,6 @@
 ############ WELCOME TO THE TODO FOR THIS PROJECT ############
 
 Priorities (in order):
-- Add support for PBR lighting & multiple lights
 - Add a skybox (cubemap)
 - Add some reflections from the skybox
 - Make 2d perlin with octaves
