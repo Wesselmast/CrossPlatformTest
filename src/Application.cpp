@@ -27,8 +27,9 @@ AppState* app_start(OpenGLState* state, Input* input) {
     }
   }
 
-  Transform playerT = {{0.0f, 2.0f, 0.0f}, zero(), one() * 1.2f};
-  app->player = cube(state, playerT, 0xD81E5B);
+  Transform playerT = {{0.0f, 8.0f, 0.0f}, zero(), one() * 1.2f};
+  PBR playerPBR = {0xE26D5A, 0.1f, 0.5f};
+  app->player = cube(state, playerT, playerPBR);
 
   app->light = point_light(state, {0xFF0000, 35000.0f, zero()});
   point_light(state, {0x0000FF, 55000.0f, zero()});

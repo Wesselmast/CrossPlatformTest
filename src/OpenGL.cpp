@@ -54,10 +54,10 @@ struct Entity;
 struct OpenGLState {
   std::forward_list<Entity*> entities;
   std::forward_list<BaseUniform*> globalUniforms;
+
   int32 amtOfLights;
   
   Mat4 vp;
-  Vec3 lightPos;
   Vec3 cameraPos;
   uint16 windowWidth;
   uint16 windowHeight;
@@ -66,16 +66,15 @@ struct OpenGLState {
 #include "Entity.cpp"
 #include "Camera.cpp"
 
-#define RENDERMODE_NORMAL     0x01
-#define RENDERMODE_WIREFRAME  0x02
-#define RENDERMODE_POINT      0x04
+#define RENDERMODE_NORMAL     GL_FILL
+#define RENDERMODE_WIREFRAME  GL_LINE
+#define RENDERMODE_POINT      GL_POINT
 
-inline void set_rendermode(uint8 renderMode) {
-  switch(renderMode) {
-    case RENDERMODE_NORMAL:    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);  break;
-    case RENDERMODE_WIREFRAME: glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);  break;
-    case RENDERMODE_POINT:     glPolygonMode(GL_FRONT_AND_BACK, GL_POINT); break;
-  }
+static int32 globalRenderUnlit;
+
+inline void set_rendermode(int32 renderMode) {
+  glPolygonMode(GL_FRONT_AND_BACK, renderMode);
+  globalRenderUnlit = renderMode != RENDERMODE_NORMAL;
 }
 
 inline void set_background_color(int32 hex) {
@@ -100,13 +99,11 @@ OpenGLState* gl_start() {
 
   OpenGLState* state = (OpenGLState*)malloc(sizeof(OpenGLState));
 
-  float32 lightRadius = 35000.0f;
-  uniform(state->globalUniforms, "lightRadius", lightRadius);
- 
   uniform(state->globalUniforms, "viewProj",    &state->vp);
-  uniform(state->globalUniforms, "lightPos",    &state->lightPos);
   uniform(state->globalUniforms, "camPos",      &state->cameraPos);
   uniform(state->globalUniforms, "amtOfLights", &state->amtOfLights);
+
+  uniform(state->globalUniforms, "renderUnlit", &globalRenderUnlit);
 
   return state;
 }

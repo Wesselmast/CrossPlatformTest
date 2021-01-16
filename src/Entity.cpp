@@ -160,7 +160,7 @@ void destroy_entity(OpenGLState* state, Entity* entity) {
   state->entities.remove(entity);
 }
 
-Entity* rect(OpenGLState* state, const Transform& t, int32 hexColor) {
+Entity* rect(OpenGLState* state, const Transform& t, const PBR& pbr) {
   float32 vertices[] = {
     -1.0f,  1.0f,  0.0f,  0.0f,  0.0f, -1.0f,
      1.0f,  1.0f,  0.0f,  0.0f,  0.0f, -1.0f,
@@ -187,15 +187,20 @@ Entity* rect(OpenGLState* state, const Transform& t, int32 hexColor) {
 
   Entity* e = new Entity(state, &attr);
 
-  Color color = hex_to_color(hexColor);
-  uniform(e->uniforms, "objColor",  color);
+  Color color = hex_to_color(pbr.hexColor);
+  float32 metallic = pbr.metallic;
+  float32 roughness = pbr.roughness;
+
+  uniform(e->uniforms, "albedo",    color);
+  uniform(e->uniforms, "metallic",  metallic);
+  uniform(e->uniforms, "roughness", roughness);
   uniform(e->uniforms, "model",     &e->modelMatrix);
   uniform(e->uniforms, "normalMat", &e->normalMatrix);
 
   return e;
 }
 
-Entity* cube(OpenGLState* state, const Transform& t, int32 hexColor) {
+Entity* cube(OpenGLState* state, const Transform& t, const PBR& pbr) {
   float32 vertices[] = {
     // Front face
     -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
@@ -257,9 +262,9 @@ Entity* cube(OpenGLState* state, const Transform& t, int32 hexColor) {
 
   Entity* e = new Entity(state, &attr);
   
-  Color color = hex_to_color(hexColor);
-  float32 metallic = 0.6f;
-  float32 roughness = 0.4f;
+  Color color = hex_to_color(pbr.hexColor);
+  float32 metallic = pbr.metallic;
+  float32 roughness = pbr.roughness;
 
   uniform(e->uniforms, "albedo",    color);
   uniform(e->uniforms, "metallic",  metallic);

@@ -13,9 +13,8 @@ in vec3 fragPos;
 
 out vec4 color;
 
+uniform int renderUnlit;
 uniform vec3 camPos;
-uniform vec3 lightPos;
-uniform float lightRadius;
 
 uniform Light lights[MAX_LIGHTS];
 uniform int amtOfLights;
@@ -88,6 +87,8 @@ void main() {
   vec3 lit = ambient + Lo;
   lit = lit / (lit + vec3(1.0));
   lit = pow(lit, vec3(1.0 / 2.2));
+
+  lit = lit * (1.0 - renderUnlit) + renderUnlit;
 
   color = vec4(lit, 1.0);
 }
