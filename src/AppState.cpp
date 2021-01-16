@@ -1,9 +1,10 @@
 #pragma once
 #include "OpenGL.cpp"
 #include "Camera.cpp"
+#include "Light.cpp"
 
 struct AppState {
   Entity* player;
-  Entity* light;
+  Light* light;
   Camera* camera;
 };

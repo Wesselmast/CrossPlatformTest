@@ -52,8 +52,9 @@ inline void activate_layout(uint8 layout) {
 struct Entity;
 
 struct OpenGLState {
-  List<Entity*> entities;
-  List<Uniform*>* globalUniforms;
+  std::forward_list<Entity*> entities;
+  std::forward_list<BaseUniform*> globalUniforms;
+  int32 amtOfLights;
   
   Mat4 vp;
   Vec3 lightPos;
@@ -98,15 +99,14 @@ OpenGLState* gl_start() {
   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
   OpenGLState* state = (OpenGLState*)malloc(sizeof(OpenGLState));
-  state->globalUniforms = (List<Uniform*>*)malloc(sizeof(List<Uniform*>));
 
   float32 lightRadius = 35000.0f;
-  state->globalUniforms->insert(uniform_create_float("lightRadius", &lightRadius, true));
-
-  state->globalUniforms->insert(uniform_create_mat4("viewProj", &state->vp));
-  state->globalUniforms->insert(uniform_create_vec3("lightPos", &state->lightPos));
-  state->globalUniforms->insert(uniform_create_vec3("camPos",   &state->cameraPos));
-
+  uniform(state->globalUniforms, "lightRadius", lightRadius);
+ 
+  uniform(state->globalUniforms, "viewProj",    &state->vp);
+  uniform(state->globalUniforms, "lightPos",    &state->lightPos);
+  uniform(state->globalUniforms, "camPos",      &state->cameraPos);
+  uniform(state->globalUniforms, "amtOfLights", &state->amtOfLights);
 
   return state;
 }
@@ -115,10 +115,7 @@ void gl_tick(OpenGLState* state, Camera* c) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   state->cameraPos = c->position;
 
-  Node<Entity*>* current = state->entities.head;
-  while(current) {
-    Entity* e = current->data;
-    
+  for(Entity* e : state->entities) {
     glBindBuffer(GL_ARRAY_BUFFER, e->vertexBuffer);
     activate_layout(e->vertexLayout);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, e->indexBuffer);
@@ -133,21 +130,20 @@ void gl_tick(OpenGLState* state, Camera* c) {
 
     glUseProgram(0);
     glDisableVertexAttribArray(0);
-
-    current = current->next;
   }
 }
 
 void gl_end(OpenGLState* state) {
   //later add in checking for level saving
 
-  Node<Entity*>* current = state->entities.head;
-  while(current) {
-    destroy_entity_partial(current->data);
-    current = current->next;
+  for(Entity* e : state->entities) {
+    destroy_entity_partial(e);
+  }
+  while(!state->entities.empty()) {
+    free(state->entities.front());
+    state->entities.pop_front();
   }
 
-  state->entities.free_list();
   uniform_free_list(state->globalUniforms);
   free(state);
 }

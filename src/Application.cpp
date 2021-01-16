@@ -6,21 +6,23 @@
 #include "Input.cpp"
 #include "Math.cpp"
 #include "Terrain.cpp"
+#include "Light.cpp"
 
 AppState* app_start(OpenGLState* state, Input* input) {
   AppState* app = (AppState*)malloc(sizeof(AppState));
   app->camera = create_camera(state);
 
-  Transform terrainT = {{500.0f, -300.0f, 100.0f}, zero(), {100.0f, 250.0f, 100.0f}};
-  terrain(state, terrainT, 2048);
+  //Transform terrainT = {{500.0f, -300.0f, 100.0f}, zero(), {100.0f, 250.0f, 100.0f}};
+  //terrain(state, terrainT, 2048);
 
-  for(int x = 0; x < 10; ++x) {
-    for(int y = 0; y < 10; ++y) {
+  const int32 res = 10;
+  for(int x = 0; x < res; ++x) {
+    for(int y = 0; y < res; ++y) {
       Vec3 p = {float32(x * 25) - 100.0f, float32(y * 25), 100.0f};
       PBR pbr;
-      pbr.hexColor = 0xE26D5A;
-      pbr.metallic = (float32)x / 10.0f;
-      pbr.roughness= (float32)y / 10.0f;
+      pbr.hexColor  = 0xE26D5A;
+      pbr.metallic  = (float32)x / (float32)res;
+      pbr.roughness = (float32)y / (float32)res;
       sphere(state, {p, zero(), one() * 10.0f}, pbr);
     }
   }
@@ -28,11 +30,9 @@ AppState* app_start(OpenGLState* state, Input* input) {
   Transform playerT = {{0.0f, 2.0f, 0.0f}, zero(), one() * 1.2f};
   app->player = cube(state, playerT, 0xD81E5B);
 
-  PBR lightPBR;
-  lightPBR.hexColor = 0xFFFFFF;
-  lightPBR.metallic = 0.0f;
-  lightPBR.roughness = 0.0f;
-  app->light = sphere(state, {{700.0f, -100.0f, 200.0f}, zero(), one() * 6.0f}, lightPBR);
+  app->light = point_light(state, {0xFF0000, 35000.0f, zero()});
+  point_light(state, {0x0000FF, 55000.0f, zero()});
+  point_light(state, {0x00FF00, 45000.0f, {200.0f, 0.0f, 0.0f}});
 
   register_key_down(input, KEY_F3, [](){ set_rendermode(RENDERMODE_WIREFRAME); });
   register_key_down(input, KEY_F4, [](){ set_rendermode(RENDERMODE_NORMAL);    });
@@ -87,16 +87,14 @@ bool app_tick(OpenGLState* state, Input* input, AppState* app, float64 dt, float
   p->set_transform(p->transform);
 
   float32 lSpeed = 0.9f, dist = 250.0f;
-  Entity* l = app->light;
-  Vec3 lPos = l->transform.position;
+  Light* l = app->light;
+  Vec3 lPos = l->position;
 
   lPos.y = sin(time * lSpeed) * dist;
   lPos.x = sin(time * lSpeed) * dist;
   lPos.z = cos(time * lSpeed) * dist;
 
   app->light->set_position(lPos);
-  state->lightPos = lPos;
-
   return is_down(input, KEY_ESCAPE);
 }
 

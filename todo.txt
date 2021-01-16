@@ -2,6 +2,8 @@
 
 Priorities (in order):
 - Add support for PBR lighting & multiple lights
+- Add a skybox (cubemap)
+- Add some reflections from the skybox
 - Make 2d perlin with octaves
 - Generate colormap for terrain
 - Modifying terrain based on user input

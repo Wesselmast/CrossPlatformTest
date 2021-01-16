@@ -1,5 +1,13 @@
 #version 330 core
 
+#define MAX_LIGHTS 8
+
+struct Light {
+  vec3 color;
+  vec3 position;
+  float radius;
+};
+
 in vec3 fragNormal;
 in vec3 fragPos;
 
@@ -8,6 +16,9 @@ out vec4 color;
 uniform vec3 camPos;
 uniform vec3 lightPos;
 uniform float lightRadius;
+
+uniform Light lights[MAX_LIGHTS];
+uniform int amtOfLights;
 
 uniform vec3 albedo;
 uniform float metallic;
@@ -47,28 +58,31 @@ void main() {
 
   vec3 R = mix(vec3(0.04), albedo, metallic);
 
-  vec3 L = normalize(lightPos - fragPos);
-  vec3 H = normalize(V + L);
-  float distance = length(lightPos - fragPos);
-  float attenuation = 1.0 / (distance * distance);
-  vec3 radiance = lightColor * attenuation * lightRadius;
+  vec3 Lo = vec3(0.0);
+  for(int i = 0; i < amtOfLights; ++i) {
+    vec3 L = normalize(lights[i].position - fragPos);
+    vec3 H = normalize(V + L);
+    float distance = length(lights[i].position - fragPos);
+    float attenuation = 1.0 / (distance * distance);
+    vec3 radiance = lights[i].color * attenuation * lights[i].radius;
 
-  float NdotV = max(dot(N, V), 0.0000001);
-  float NdotL = max(dot(N, L), 0.0000001);
-  float NdotH = max(dot(N, H), 0.0);
-  float HdotV = max(dot(H, V), 0.0);
+    float NdotV = max(dot(N, V), 0.0000001);
+    float NdotL = max(dot(N, L), 0.0000001);
+    float NdotH = max(dot(N, H), 0.0);
+    float HdotV = max(dot(H, V), 0.0);
 
-  float D = distributionGGX(NdotH, roughness);
-  float G = geometrySmith(NdotV, NdotL, roughness);
-  vec3  F = freshnelSchlick(HdotV, R);
+    float D = distributionGGX(NdotH, roughness);
+    float G = geometrySmith(NdotV, NdotL, roughness);
+    vec3  F = freshnelSchlick(HdotV, R);
 
-  vec3 specular = D * G * F;
-  specular /= 4.0 * NdotV * NdotL;
+    vec3 specular = D * G * F;
+    specular /= 4.0 * NdotV * NdotL;
 
-  vec3 kD = vec3(1.0) - F;
-  kD *= 1.0 - metallic;
+    vec3 kD = vec3(1.0) - F;
+    kD *= 1.0 - metallic;
 
-  vec3 Lo = (kD * albedo / PI + specular) * radiance * NdotL;
+    Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+  }
 
   vec3 ambient = albedo * 0.03;
   vec3 lit = ambient + Lo;

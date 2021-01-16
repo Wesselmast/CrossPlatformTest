@@ -31,7 +31,7 @@ struct PBR {
 };
 
 struct Entity {
-  List<Uniform*>* uniforms;
+  std::forward_list<BaseUniform*> uniforms;
 
   uint32 program;
   
@@ -141,13 +141,11 @@ struct Entity {
     transform = attr->transform;
     set_transform(transform);
 
-    uniforms = (List<Uniform*>*)malloc(sizeof(List<Uniform*>));
     return this;
   }
 
-  Entity* init(OpenGLState* state, EntityAttributes* attr) {
-    state->entities.insert(reinit(attr));   
-    return this;
+  Entity(OpenGLState* state, EntityAttributes* attr) {
+    state->entities.emplace_front(reinit(attr));
   }
 };
 
@@ -187,12 +185,12 @@ Entity* rect(OpenGLState* state, const Transform& t, int32 hexColor) {
   attr.indices = indices;
   attr.indArrSize = sizeof(indices);
 
-  Entity* e = ((Entity*)malloc(sizeof(Entity)))->init(state, &attr);
+  Entity* e = new Entity(state, &attr);
 
   Color color = hex_to_color(hexColor);
-  e->uniforms->insert(uniform_create_color("objColor",  &color, true));
-  e->uniforms->insert(uniform_create_mat4 ("model",     &e->modelMatrix));
-  e->uniforms->insert(uniform_create_mat4 ("normalMat", &e->normalMatrix));
+  uniform(e->uniforms, "objColor",  color);
+  uniform(e->uniforms, "model",     &e->modelMatrix);
+  uniform(e->uniforms, "normalMat", &e->normalMatrix);
 
   return e;
 }
@@ -257,21 +255,17 @@ Entity* cube(OpenGLState* state, const Transform& t, int32 hexColor) {
   attr.indices = indices;
   attr.indArrSize = sizeof(indices);
 
-  Entity* e = ((Entity*)malloc(sizeof(Entity)))->init(state, &attr);
+  Entity* e = new Entity(state, &attr);
   
   Color color = hex_to_color(hexColor);
-  float metallic = 0.6f;
-  float roughness = 0.4f;
+  float32 metallic = 0.6f;
+  float32 roughness = 0.4f;
 
-  e->uniforms->insert(uniform_create_color("albedo",    &color,     true));
-  e->uniforms->insert(uniform_create_float("metallic",  &metallic,  true));
-  e->uniforms->insert(uniform_create_float("roughness", &roughness, true));
-  e->uniforms->insert(uniform_create_mat4 ("model",     &e->modelMatrix));
-  e->uniforms->insert(uniform_create_mat4 ("normalMat", &e->normalMatrix));
-
- // e->uniforms->insert(uniform_create_color("objColor",  &color, true));
- // e->uniforms->insert(uniform_create_mat4 ("model",     &e->modelMatrix));
- // e->uniforms->insert(uniform_create_mat4 ("normalMat", &e->normalMatrix));
+  uniform(e->uniforms, "albedo",    color);
+  uniform(e->uniforms, "metallic",  metallic);
+  uniform(e->uniforms, "roughness", roughness);
+  uniform(e->uniforms, "model",     &e->modelMatrix);
+  uniform(e->uniforms, "normalMat", &e->normalMatrix);
 
   return e; 
 }
@@ -311,17 +305,17 @@ Entity* sphere(OpenGLState* state, const Transform& t, const PBR& pbr, int32 res
   attr.indices = &indices[0];
   attr.indArrSize = indices.size() * sizeof(uint32);
 
-  Entity* e = ((Entity*)malloc(sizeof(Entity)))->init(state, &attr);
+  Entity* e = new Entity(state, &attr);
   
   Color color = hex_to_color(pbr.hexColor);
-  float metallic = pbr.metallic;
-  float roughness = pbr.roughness;
+  float32 metallic = pbr.metallic;
+  float32 roughness = pbr.roughness;
 
-  e->uniforms->insert(uniform_create_color("albedo",    &color,     true));
-  e->uniforms->insert(uniform_create_float("metallic",  &metallic,  true));
-  e->uniforms->insert(uniform_create_float("roughness", &roughness, true));
-  e->uniforms->insert(uniform_create_mat4 ("model",     &e->modelMatrix));
-  e->uniforms->insert(uniform_create_mat4 ("normalMat", &e->normalMatrix));
+  uniform(e->uniforms, "albedo",    color);
+  uniform(e->uniforms, "metallic",  metallic);
+  uniform(e->uniforms, "roughness", roughness);
+  uniform(e->uniforms, "model",     &e->modelMatrix);
+  uniform(e->uniforms, "normalMat", &e->normalMatrix);
 
   return e; 
 }

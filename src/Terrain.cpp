@@ -56,10 +56,10 @@ static Entity* terrain(OpenGLState* state, const Transform& t, int32 res = 256) 
   attr.indices = &indices[0];
   attr.indArrSize = indices.size() * sizeof(uint32);
 
-  Entity* e = ((Entity*)malloc(sizeof(Entity)))->init(state, &attr);
+  Entity* e = new Entity(state, &attr);
 
-  e->uniforms->insert(uniform_create_mat4 ("model",     &e->modelMatrix));
-  e->uniforms->insert(uniform_create_mat4 ("normalMat", &e->normalMatrix));
+  uniform(e->uniforms, "model",     &e->modelMatrix);
+  uniform(e->uniforms, "normalMat", &e->normalMatrix);
 
   return e; 
 }
