@@ -14,11 +14,25 @@ AppState* app_start(OpenGLState* state, Input* input) {
   Transform terrainT = {{500.0f, -300.0f, 100.0f}, zero(), {100.0f, 250.0f, 100.0f}};
   terrain(state, terrainT, 2048);
 
-  sphere(state, {{250.0f, -5.0f, 100.0f}, zero(), one() * 10.0f}, 0x6665DD);
+  for(int x = 0; x < 10; ++x) {
+    for(int y = 0; y < 10; ++y) {
+      Vec3 p = {float32(x * 25) - 100.0f, float32(y * 25), 100.0f};
+      PBR pbr;
+      pbr.hexColor = 0xE26D5A;
+      pbr.metallic = (float32)x / 10.0f;
+      pbr.roughness= (float32)y / 10.0f;
+      sphere(state, {p, zero(), one() * 10.0f}, pbr);
+    }
+  }
 
   Transform playerT = {{0.0f, 2.0f, 0.0f}, zero(), one() * 1.2f};
   app->player = cube(state, playerT, 0xD81E5B);
-  app->light = cube(state, {{700.0f, -100.0f, 200.0f}, zero(), one() * 6.0f}, 0xFFFFFF);
+
+  PBR lightPBR;
+  lightPBR.hexColor = 0xFFFFFF;
+  lightPBR.metallic = 0.0f;
+  lightPBR.roughness = 0.0f;
+  app->light = sphere(state, {{700.0f, -100.0f, 200.0f}, zero(), one() * 6.0f}, lightPBR);
 
   register_key_down(input, KEY_F3, [](){ set_rendermode(RENDERMODE_WIREFRAME); });
   register_key_down(input, KEY_F4, [](){ set_rendermode(RENDERMODE_NORMAL);    });
@@ -66,18 +80,19 @@ bool app_tick(OpenGLState* state, Input* input, AppState* app, float64 dt, float
   Vec3& pPos = p->transform.position;
   Vec3& pRot = p->transform.rotation;
 
-  float32 speed = 1.0f, dist = 250.0f;
+  float32 speed = 1.0f;
   pRot.z += speed * dt *  5;
   pRot.x += speed * dt * 10;
   pRot.y += speed * dt * 15;
   p->set_transform(p->transform);
 
+  float32 lSpeed = 0.9f, dist = 250.0f;
   Entity* l = app->light;
   Vec3 lPos = l->transform.position;
 
-  lPos.y = sin(time * speed) * dist;
-  lPos.x = sin(time * speed) * dist;
-  lPos.z = cos(time * speed) * dist;
+  lPos.y = sin(time * lSpeed) * dist;
+  lPos.x = sin(time * lSpeed) * dist;
+  lPos.z = cos(time * lSpeed) * dist;
 
   app->light->set_position(lPos);
   state->lightPos = lPos;

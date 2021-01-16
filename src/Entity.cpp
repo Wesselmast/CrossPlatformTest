@@ -24,6 +24,12 @@ struct EntityAttributes {
   Transform transform;
 };
 
+struct PBR {
+  int32 hexColor;
+  float32 metallic;
+  float32 roughness;
+};
+
 struct Entity {
   List<Uniform*>* uniforms;
 
@@ -245,8 +251,8 @@ Entity* cube(OpenGLState* state, const Transform& t, int32 hexColor) {
   attr.vertexCount = 24;
   attr.vertexLayout = LAYOUT_POSITION_3D | LAYOUT_NORMAL; 
   attr.transform = t;
-  attr.vertexShaderPath   = "res/shaders/defaultV.glsl";
-  attr.fragmentShaderPath = "res/shaders/defaultF.glsl";
+  attr.vertexShaderPath   = "res/shaders/vertex_PBR.glsl";
+  attr.fragmentShaderPath = "res/shaders/fragment_PBR.glsl";
 
   attr.indices = indices;
   attr.indArrSize = sizeof(indices);
@@ -254,14 +260,23 @@ Entity* cube(OpenGLState* state, const Transform& t, int32 hexColor) {
   Entity* e = ((Entity*)malloc(sizeof(Entity)))->init(state, &attr);
   
   Color color = hex_to_color(hexColor);
-  e->uniforms->insert(uniform_create_color("objColor",  &color, true));
+  float metallic = 0.6f;
+  float roughness = 0.4f;
+
+  e->uniforms->insert(uniform_create_color("albedo",    &color,     true));
+  e->uniforms->insert(uniform_create_float("metallic",  &metallic,  true));
+  e->uniforms->insert(uniform_create_float("roughness", &roughness, true));
   e->uniforms->insert(uniform_create_mat4 ("model",     &e->modelMatrix));
   e->uniforms->insert(uniform_create_mat4 ("normalMat", &e->normalMatrix));
+
+ // e->uniforms->insert(uniform_create_color("objColor",  &color, true));
+ // e->uniforms->insert(uniform_create_mat4 ("model",     &e->modelMatrix));
+ // e->uniforms->insert(uniform_create_mat4 ("normalMat", &e->normalMatrix));
 
   return e; 
 }
 
-Entity* sphere(OpenGLState* state, const Transform& t, int32 hexColor, int32 res = 50) {
+Entity* sphere(OpenGLState* state, const Transform& t, const PBR& pbr, int32 res = 50) {
   int32 resSqr = res * res;
 
   std::vector<float32> vertices(resSqr * 6, 0.0f);
@@ -290,16 +305,21 @@ Entity* sphere(OpenGLState* state, const Transform& t, int32 hexColor, int32 res
   attr.vertexCount = resSqr;
   attr.vertexLayout = LAYOUT_POSITION_3D | LAYOUT_NORMAL; 
   attr.transform = t;
-  attr.vertexShaderPath   = "res/shaders/defaultV.glsl";
-  attr.fragmentShaderPath = "res/shaders/defaultF.glsl";
+  attr.vertexShaderPath   = "res/shaders/vertex_PBR.glsl";
+  attr.fragmentShaderPath = "res/shaders/fragment_PBR.glsl";
 
   attr.indices = &indices[0];
   attr.indArrSize = indices.size() * sizeof(uint32);
 
   Entity* e = ((Entity*)malloc(sizeof(Entity)))->init(state, &attr);
   
-  Color color = hex_to_color(hexColor);
-  e->uniforms->insert(uniform_create_color("objColor",  &color, true));
+  Color color = hex_to_color(pbr.hexColor);
+  float metallic = pbr.metallic;
+  float roughness = pbr.roughness;
+
+  e->uniforms->insert(uniform_create_color("albedo",    &color,     true));
+  e->uniforms->insert(uniform_create_float("metallic",  &metallic,  true));
+  e->uniforms->insert(uniform_create_float("roughness", &roughness, true));
   e->uniforms->insert(uniform_create_mat4 ("model",     &e->modelMatrix));
   e->uniforms->insert(uniform_create_mat4 ("normalMat", &e->normalMatrix));
 

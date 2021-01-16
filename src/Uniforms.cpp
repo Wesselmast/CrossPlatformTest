@@ -16,6 +16,11 @@ struct Uniform {
   uint8 oneTime;
 };
 
+inline void uniform_tick_float(int32 location, void* data) {
+  float32 f = *(float32*)data;
+  glUniform1f(location, f);
+}
+
 inline void uniform_tick_vec3(int32 location, void* data) {
   Vec3* v = (Vec3*)data;
   glUniform3f(location, v->x, v->y, v->z);
@@ -44,6 +49,10 @@ Uniform* uniform_create_generic(const char* name, void* data, uint32 dataSize, b
   else uniform->data = data;
   
   return uniform;
+}
+
+Uniform* uniform_create_float(const char* name, float32* data, bool oneTime = false) {
+  return uniform_create_generic(name, (void*)data, sizeof(float32), oneTime, &uniform_tick_float);
 }
 
 Uniform* uniform_create_color(const char* name, Color* data, bool oneTime = false) {

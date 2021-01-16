@@ -57,6 +57,7 @@ struct OpenGLState {
   
   Mat4 vp;
   Vec3 lightPos;
+  Vec3 cameraPos;
   uint16 windowWidth;
   uint16 windowHeight;
 };
@@ -99,14 +100,20 @@ OpenGLState* gl_start() {
   OpenGLState* state = (OpenGLState*)malloc(sizeof(OpenGLState));
   state->globalUniforms = (List<Uniform*>*)malloc(sizeof(List<Uniform*>));
 
+  float32 lightRadius = 35000.0f;
+  state->globalUniforms->insert(uniform_create_float("lightRadius", &lightRadius, true));
+
   state->globalUniforms->insert(uniform_create_mat4("viewProj", &state->vp));
   state->globalUniforms->insert(uniform_create_vec3("lightPos", &state->lightPos));
+  state->globalUniforms->insert(uniform_create_vec3("camPos",   &state->cameraPos));
+
 
   return state;
 }
 
 void gl_tick(OpenGLState* state, Camera* c) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  state->cameraPos = c->position;
 
   Node<Entity*>* current = state->entities.head;
   while(current) {
