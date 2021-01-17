@@ -5,6 +5,7 @@
 #include "File.cpp"
 #include "Color.cpp"
 #include "MeshGeneration.cpp"
+#include "Layout.cpp"
 
 #include <vector>
 #include <string>
@@ -41,6 +42,12 @@ struct Entity {
 
   uint32 indexBuffer;
   uint32 indexBufferSize;  
+
+  uint32 textureID;
+  int32 textureType = GL_TEXTURE_2D;
+
+  int32 cullFace = GL_FRONT;
+  int32 depthFunc = GL_LESS;
 
   Mat4 modelMatrix;
   Mat4 normalMatrix;
@@ -94,6 +101,30 @@ struct Entity {
     glDeleteShader(fragmentShader);
   }
 
+  void draw(OpenGLState* state) {
+    glDepthFunc(depthFunc);
+    glCullFace(cullFace);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    activate_layout(vertexLayout);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(textureType, textureID);
+
+    glUseProgram(program);
+
+    uniform_tick_list(state->globalUniforms, program); 
+    uniform_tick_list(uniforms, program);
+
+    glDrawElements(GL_TRIANGLES, indexBufferSize, GL_UNSIGNED_INT, (void*)0);
+
+    glCullFace(GL_FRONT);
+    glDepthFunc(GL_LESS);
+    glUseProgram(0);
+    glDisableVertexAttribArray(0);
+  }
+
   void set_scale(const Vec3& scale) {
     transform.scale = scale;
     set_transform(transform);
@@ -107,14 +138,6 @@ struct Entity {
   void set_position(const Vec3& position) {
     transform.position = position;
     set_transform(transform);
-  }
-
-  void set_cullface_front() {
-    glCullFace(GL_FRONT);
-  }
-
-  void set_cullface_back() {
-    glCullFace(GL_BACK);
   }
 
   void set_transform(const Transform& t) {

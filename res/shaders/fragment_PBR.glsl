@@ -23,6 +23,8 @@ uniform vec3 albedo;
 uniform float metallic;
 uniform float roughness;
 
+uniform samplerCube skybox;
+
 const float PI = 3.14159265359;
 
 /*
@@ -30,16 +32,16 @@ const float PI = 3.14159265359;
   https://www.youtube.com/watch?v=5p0e7YNONr8
 */
 
-float distributionGGX(float NdotH, float roughness) {
-  float r4 = roughness * roughness * roughness * roughness;
+float distributionGGX(float NdotH, float r) {
+  float r4 = r * r * r * r;
   float d  = NdotH * NdotH * (r4 - 1.0) + 1.0;
   d = PI * d * d;
   return r4 / max(d, 0.0000001);
 }
 
-float geometrySmith(float NdotV, float NdotL, float roughness) {
-  float r = roughness + 1.0;
-  float k = (r * r) / 8.0;
+float geometrySmith(float NdotV, float NdotL, float r) {
+  float ra = r + 1.0;
+  float k = (ra * ra) / 8.0;
   float ggx1 = NdotV / (NdotV * (1.0 - k) + k);
   float ggx2 = NdotL / (NdotL * (1.0 - k) + k);
   return ggx1 * ggx2;
@@ -53,7 +55,11 @@ void main() {
   vec3 N = normalize(fragNormal);
   vec3 V = normalize(camPos - fragPos);
 
-  vec3 R = mix(vec3(0.04), albedo, metallic);
+  float BM = max(metallic,  0.0000001);
+  float BR = max(roughness, 0.0000001);
+  
+  vec3 env = albedo * texture(skybox, reflect(V, N)).rgb;
+  vec3 R = mix(vec3(0.04), env, BM);
 
   vec3 Lo = vec3(0.0);
   for(int i = 0; i < amtOfLights; ++i) {
@@ -68,15 +74,15 @@ void main() {
     float NdotH = max(dot(N, H), 0.0);
     float HdotV = max(dot(H, V), 0.0);
 
-    float D = distributionGGX(NdotH, roughness);
-    float G = geometrySmith(NdotV, NdotL, roughness);
+    float D = distributionGGX(NdotH, BR);
+    float G = geometrySmith(NdotV, NdotL, BR);
     vec3  F = freshnelSchlick(HdotV, R);
 
     vec3 specular = D * G * F;
     specular /= 4.0 * NdotV * NdotL;
 
     vec3 kD = vec3(1.0) - F;
-    kD *= 1.0 - metallic;
+    kD *= 1.0 - BM;
 
     Lo += (kD * albedo / PI + specular) * radiance * NdotL;
   }

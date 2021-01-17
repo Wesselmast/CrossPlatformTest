@@ -7,20 +7,23 @@
 #include "Math.cpp"
 #include "Terrain.cpp"
 #include "Light.cpp"
+#include "Skybox.cpp"
 
 AppState* app_start(OpenGLState* state, Input* input) {
   AppState* app = (AppState*)malloc(sizeof(AppState));
   app->camera = create_camera(state);
 
-  Transform terrainT = {{500.0f, -300.0f, 100.0f}, zero(), {100.0f, 250.0f, 100.0f}};
-  terrain(state, terrainT, 2048);
+  skybox(state, app->camera);
+
+  //Transform terrainT = {{500.0f, -300.0f, 100.0f}, zero(), {100.0f, 250.0f, 100.0f}};
+  //terrain(state, terrainT, 2048);
 
   const int32 res = 10;
   for(int x = 0; x < res; ++x) {
     for(int y = 0; y < res; ++y) {
       Vec3 p = {float32(x * 25) - 100.0f, float32(y * 25), 100.0f};
       PBR pbr;
-      pbr.hexColor  = 0xE26D5A;
+      pbr.hexColor  = 0xFFFFFF;//0xE26D5A;
       pbr.metallic  = (float32)x / (float32)res;
       pbr.roughness = (float32)y / (float32)res;
       sphere(state, {p, zero(), one() * 10.0f}, pbr);
@@ -31,9 +34,9 @@ AppState* app_start(OpenGLState* state, Input* input) {
   PBR playerPBR = {0xE26D5A, 0.1f, 0.5f};
   app->player = cube(state, playerT, playerPBR);
 
-  app->light = point_light(state, {0xE9B872, 35000.0f, zero()});
-  point_light(state, {0x0000FF, 55000.0f, zero()});
-  point_light(state, {0x00FF00, 45000.0f, {200.0f, 0.0f, 0.0f}});
+  app->light = point_light(state, {0xFFFFFF, 35000.0f, zero()});
+  point_light(state, {0xFFFFFF, 55000.0f, zero()});
+  point_light(state, {0xFFFFFF, 45000.0f, {200.0f, 0.0f, 0.0f}});
 
   register_key_down(input, KEY_F3, [](){ set_rendermode(RENDERMODE_WIREFRAME); });
   register_key_down(input, KEY_F4, [](){ set_rendermode(RENDERMODE_NORMAL);    });

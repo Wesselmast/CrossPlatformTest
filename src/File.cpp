@@ -24,9 +24,6 @@ std::string load_file_as_string(const char* path) {
   return sstream.str();
 }
 
-
-
-
 //wrappers for stb, for if I ever want to remove it
 
 uint8* load_image(const char* path, int32* width, int32* height, int32 channels) {
