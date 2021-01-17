@@ -1,7 +1,6 @@
 #pragma once
 #include "Types.cpp"
 #include "Math.cpp"
-#include "List.cpp"
 #include "Color.cpp"
 
 #define GLEW_STATIC

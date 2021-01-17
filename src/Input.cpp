@@ -1,5 +1,5 @@
 #pragma once
-#include "List.cpp"
+#include <forward_list>
 
 #if defined(__LINUX__)
 enum {
@@ -85,8 +85,8 @@ typedef void(*fptr_keyevent)();
 struct Input {
   bool keyInput[MAXKEYVALUE];
   bool keyFlags[MAXKEYVALUE];
-  List<fptr_keyevent> keyDownEvents[MAXKEYVALUE];
-  List<fptr_keyevent> keyUpEvents[MAXKEYVALUE];
+  std::forward_list<fptr_keyevent> keyDownEvents[MAXKEYVALUE];
+  std::forward_list<fptr_keyevent> keyUpEvents[MAXKEYVALUE];
   int32 mouseX = 0;
   int32 mouseY = 0;
   int32 lastMouseX = 0;
@@ -96,11 +96,11 @@ struct Input {
 };
 
 void register_key_up(Input* input, uint8 key, fptr_keyevent e) {
-  input->keyUpEvents[key].insert(e);
+  input->keyUpEvents[key].emplace_front(e);
 }
 
 void register_key_down(Input* input, uint8 key, fptr_keyevent e) {
-  input->keyDownEvents[key].insert(e);
+  input->keyDownEvents[key].emplace_front(e);
 }
 
 void unregister_key_up(Input* input, uint8 key, fptr_keyevent e) {
@@ -111,12 +111,8 @@ void unregister_key_down(Input* input, uint8 key, fptr_keyevent e) {
   input->keyDownEvents[key].remove(e);
 }
 
-void trigger_events(const List<fptr_keyevent>& list) {
-  Node<fptr_keyevent>* current = list.head;
-  while(current) {
-    current->data();
-    current = current->next;
-  }
+void trigger_events(const std::forward_list<fptr_keyevent>& list) {
+  for(fptr_keyevent e : list) e();
 }
 
 Input* input_start() {
@@ -125,8 +121,8 @@ Input* input_start() {
 
 void input_end(Input* input) {
   for(uint8 key = 0; key < MAXKEYVALUE; ++key) {
-    input->keyDownEvents[key].free_list();
-    input->keyUpEvents[key].free_list();
+    input->keyDownEvents[key].clear();
+    input->keyUpEvents[key].clear();
   }
   free(input);
 }
