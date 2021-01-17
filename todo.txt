@@ -1,7 +1,6 @@
 ############ WELCOME TO THE TODO FOR THIS PROJECT ############
 
 Priorities (in order):
-- Add a skybox (cubemap)    <== this is next!
 - Add some reflections from the skybox
 - Make 2d perlin with octaves
 - Generate colormap for terrain
