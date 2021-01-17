@@ -12,8 +12,8 @@ AppState* app_start(OpenGLState* state, Input* input) {
   AppState* app = (AppState*)malloc(sizeof(AppState));
   app->camera = create_camera(state);
 
-  //Transform terrainT = {{500.0f, -300.0f, 100.0f}, zero(), {100.0f, 250.0f, 100.0f}};
-  //terrain(state, terrainT, 2048);
+  Transform terrainT = {{500.0f, -300.0f, 100.0f}, zero(), {100.0f, 250.0f, 100.0f}};
+  terrain(state, terrainT, 2048);
 
   const int32 res = 10;
   for(int x = 0; x < res; ++x) {
@@ -31,7 +31,7 @@ AppState* app_start(OpenGLState* state, Input* input) {
   PBR playerPBR = {0xE26D5A, 0.1f, 0.5f};
   app->player = cube(state, playerT, playerPBR);
 
-  app->light = point_light(state, {0xFF0000, 35000.0f, zero()});
+  app->light = point_light(state, {0xE9B872, 35000.0f, zero()});
   point_light(state, {0x0000FF, 55000.0f, zero()});
   point_light(state, {0x00FF00, 45000.0f, {200.0f, 0.0f, 0.0f}});
 

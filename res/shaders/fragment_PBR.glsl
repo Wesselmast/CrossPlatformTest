@@ -50,8 +50,6 @@ vec3 freshnelSchlick(float HdotV, vec3 reflectivity) {
 }
 
 void main() {
-  vec3 lightColor = vec3(0.917, 0.937, 0.741);
-  
   vec3 N = normalize(fragNormal);
   vec3 V = normalize(camPos - fragPos);
 
