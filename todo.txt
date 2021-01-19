@@ -6,7 +6,7 @@ Priorities (in order):
 - Look at the light system, it's still a bit reminiscent from the entity system
 - Make other objects like lights and cameras be actors as well by turning them into components
   - A camera, for instance, would just be an actor with just a camera and a transform component
-- gl_tick should just tick the renderercomponents, other components should be ticked in app_tick (I think)
+- gl_tick should just tick the renderercomponents, other components should be ticked in app_tick (I think?!)
 
 - Make 2d perlin with octaves
 - Generate colormap for terrain
@@ -18,6 +18,18 @@ Priorities (in order):
 - 2D rendering component
 - UI system
 - Gizmos
+
+########################### IDEAS ############################
+
+For caching the materials, meshes and later textures and other assets, I could add a parent 'asset' struct.
+The openglstate would then hold a data structure filled with unique assets. 
+When calling functions like mesh_cube(), it doesn't run the code again or allocate more memory.
+It instead searches if it was already added to this data structure.
+
+This does mean that the openglstate has to be passed to all the assets
+
+It would also be cool to have a data structure that somehow searches for unique types
+This way the components system (and upcoming asset system) don't need string identifiers.
 
 #################### GOAL OF THE PROJECT #####################
 

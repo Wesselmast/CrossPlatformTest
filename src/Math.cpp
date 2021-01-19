@@ -59,16 +59,16 @@ const float32 d2r() {
   return pi() / 180.0f;
 }
 
-const Vec3 vec3_from_scalar(float32 scalar) {
-  return {scalar, scalar, scalar};
-}
-
 const Vec3 zero() {
-  return vec3_from_scalar(0.0f);
+  return {0.0f, 0.0f, 0.0f};
 }
 
 const Vec3 one() {
-  return vec3_from_scalar(1.0f);
+  return {1.0f, 1.0f, 1.0f};
+}
+
+const Transform zero_t() {
+  return {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}};
 }
 
 Vec3 operator-(const Vec3& a) {
@@ -155,7 +155,7 @@ bool vec3_equal(const Vec3& a, const Vec3& b, float32 bounds) {
 Vec3 vec3_normalize(const Vec3& vec) {
   Vec3 result = {};
   float32 len = vec3_length(vec);
-  if(len == 0.0f) return vec3_from_scalar(0.0f);
+  if(len == 0.0f) return zero();
   result.x = vec.x / len;
   result.y = vec.y / len;
   result.z = vec.z / len;

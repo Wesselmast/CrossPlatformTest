@@ -14,34 +14,69 @@
 #include "RendererComponent.cpp"
 #include "TransformComponent.cpp"
 
+Actor* actor_skybox(OpenGLState* state, Camera* camera) {
+  Actor* a = actor(state);
+  SkyboxMaterial* skyMat = material_skybox(state, camera);
+  add_component(a, "renderer", component_renderer(mesh_simple_inverted_cube(), skyMat));
+  return a;
+}
+
+Actor* actor_generic(OpenGLState* state, const Transform& t) {
+  Actor* a = actor(state); 
+
+  TransformComponent* tc = component_transform(t);
+  add_component(a, "transform", tc);
+
+  //TODO: this is not pretty!
+  add_component(a, "renderer",  component_renderer(mesh_cube(), material_pbr(tc)));
+
+  return a;
+}
+
+Actor* actor_terrain(OpenGLState* state, const Transform& t) {
+  Actor* a = actor_generic(state, t);
+
+  TransformComponent* tc = get_component<TransformComponent*>(a, "transform"); 
+  RendererComponent*  r  = get_component<RendererComponent*>(a, "renderer");
+  
+  r->set_mesh(mesh_terrain(256));
+  r->set_material(material_terrain(tc));
+
+  return a;
+}
+
+Actor* actor_pbr_sphere(OpenGLState* state, const Transform& t, Mesh* sphere, float32 roughness, float32 metallic) {
+  Actor* a = actor_generic(state, t);
+
+  RendererComponent* r = get_component<RendererComponent*>(a, "renderer");
+
+  r->set_mesh(sphere);
+  PBRMaterial* pbr = (PBRMaterial*)r->material;
+  pbr->set_roughness(roughness);
+  pbr->set_metallic(metallic);
+
+  return a;
+}
+
+
 AppState* app_start(OpenGLState* state, Input* input) {
   AppState* app = (AppState*)malloc(sizeof(AppState));
   app->camera = create_camera(state);
   app->sphere = mesh_sphere();
 
-  Actor* sky = actor(state);
-  SkyboxMaterial* skyMat = material_skybox(state, app->camera);
-  add_component(sky, "renderer", component_renderer(mesh_simple_inverted_cube(), skyMat));
-
-  Actor* terrain = actor(state); 
-  TransformComponent* terrainT = component_transform({{500.0f, -300.0f, 100.0f}, zero(), {100.0f, 250.0f, 100.0f}});
-  add_component(terrain, "transform", terrainT);
-  add_component(terrain, "renderer",  component_renderer(mesh_terrain(512), material_terrain(terrainT)));
+  actor_skybox(state, app->camera);
+  actor_terrain(state, {{500.0f, -300.0f, 100.0f}, zero(), {100.0f, 250.0f, 100.0f}});
 
   const int32 res = 10;
   for(int x = 0; x < res; ++x) {
     for(int y = 0; y < res; ++y) {
-      Actor* a = actor(state);
-      Vec3 p = {float32(x * 25) - 100.0f, float32(y * 25), 100.0f};
-      TransformComponent* t = component_transform({p, zero(), one() * 10.0f});
-      add_component(a, "transform", t);
+      Transform tS = zero_t();
+      tS.position = {float32(x * 25) - 100.0f, float32(y * 25), 100.0f};
+      tS.scale = tS.scale * 10.0f;
+      float32 metallic  = (float32)x / (float32)res;
+      float32 roughness = (float32)y / (float32)res;
 
-      PBRMaterial* pbr = material_pbr(t);
-      pbr->set_color(0xFFFFFF);
-      pbr->set_metallic((float32)x / (float32)res);
-      pbr->set_roughness((float32)y / (float32)res);
-
-      add_component(a, "renderer",  component_renderer(app->sphere, pbr));
+      actor_pbr_sphere(state, tS, app->sphere, roughness, metallic);
     }
   }
 

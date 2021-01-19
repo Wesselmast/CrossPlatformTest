@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Components.cpp"
+#include "Macros.cpp"
 #include <unordered_map>
 
 struct Actor {
@@ -31,12 +32,17 @@ void add_component(Actor* a, const char* name, Component* c) {
 }
 
 template<typename T>
-void get_component(Actor* a, const char* name, T outC) {
-  //ADD ERROR CHECKING
-  outC = (T)a->components[name];
+T get_component(Actor* a, const char* name) {
+  auto itr = a->components.find(name);
+  if(itr == a->components.end()) {
+    log_("ERR: Component name wasn't found!\n");
+    return nullptr;
+  }
+  return (T)itr->second;
 }
 
 void destroy(OpenGLState* state, Actor* actor) {
   state->actors.remove(actor);
   delete actor;
 }
+
