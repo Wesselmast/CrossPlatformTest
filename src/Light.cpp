@@ -3,7 +3,11 @@
 #include "Color.cpp"
 #include "Math.cpp"
 #include "Types.cpp" 
-#include "Entity.cpp"
+
+#include "PBRMaterial.cpp"
+#include "TransformComponent.cpp"
+#include "RendererComponent.cpp"
+
 #include <string>
 
 struct LightAttributes {
@@ -17,24 +21,28 @@ struct Light {
   float32 radius;
   Vec3 position;
 
-  Entity* gizmo;
+  TransformComponent* gizmoT;
 
   void set_position(const Vec3& p) {
-    gizmo->set_position(p);
+    gizmoT->set_position(p);
     position = p;
   }
 
   Light* init(OpenGLState* state, const LightAttributes& attr, int32 index) {
-    PBR pbr;
-    pbr.hexColor = attr.hexcolor;
-    pbr.metallic = 0.0f;
-    pbr.roughness = 0.0f;
-
     position = attr.position;
     radius   = attr.radius;
     color    = hex_to_color(attr.hexcolor);
 
-    gizmo = sphere(state, {position, zero(), one()}, pbr);
+    Actor* gizmo = actor(state);
+    gizmoT = component_transform({position, zero(), one()});
+    add_component(gizmo, "transform", gizmoT);
+    
+    PBRMaterial* pbr = material_pbr(gizmoT);
+    pbr->set_color(attr.hexcolor);
+    pbr->set_metallic(0.0f);
+    pbr->set_roughness(0.0f);
+
+    add_component(gizmo, "renderer", component_renderer(mesh_sphere(), pbr));
 
     std::string baseStr = "lights[" + std::to_string(index) + "]";
     
@@ -42,7 +50,7 @@ struct Light {
     std::string colStr = baseStr + ".color";
     std::string radStr = baseStr + ".radius";
 
-    uniform(state->globalUniforms,  posStr, &position);
+    uniform(state->globalUniforms, posStr, &position);
     uniform(state->globalUniforms, colStr, &color);
     uniform(state->globalUniforms, radStr, &radius);
     
@@ -50,6 +58,8 @@ struct Light {
     return this;
   }
 };
+
+//TODO: rework lights a bit so this doesn't leak
 
 Light* point_light(OpenGLState* state, const LightAttributes& attr) {
   static int32 index = 0;

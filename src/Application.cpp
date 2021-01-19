@@ -5,34 +5,45 @@
 #include "OpenGL.cpp"
 #include "Input.cpp"
 #include "Math.cpp"
-#include "Terrain.cpp"
 #include "Light.cpp"
-#include "Skybox.cpp"
+
+#include "Actor.cpp"
+#include "PBRMaterial.cpp"
+#include "SkyboxMaterial.cpp"
+#include "TerrainMaterial.cpp"
+#include "RendererComponent.cpp"
+#include "TransformComponent.cpp"
 
 AppState* app_start(OpenGLState* state, Input* input) {
   AppState* app = (AppState*)malloc(sizeof(AppState));
   app->camera = create_camera(state);
+  app->sphere = mesh_sphere();
 
-  skybox(state, app->camera);
+  Actor* sky = actor(state);
+  SkyboxMaterial* skyMat = material_skybox(state, app->camera);
+  add_component(sky, "renderer", component_renderer(mesh_simple_inverted_cube(), skyMat));
 
-  //Transform terrainT = {{500.0f, -300.0f, 100.0f}, zero(), {100.0f, 250.0f, 100.0f}};
-  //terrain(state, terrainT, 2048);
+  Actor* terrain = actor(state); 
+  TransformComponent* terrainT = component_transform({{500.0f, -300.0f, 100.0f}, zero(), {100.0f, 250.0f, 100.0f}});
+  add_component(terrain, "transform", terrainT);
+  add_component(terrain, "renderer",  component_renderer(mesh_terrain(512), material_terrain(terrainT)));
 
   const int32 res = 10;
   for(int x = 0; x < res; ++x) {
     for(int y = 0; y < res; ++y) {
+      Actor* a = actor(state);
       Vec3 p = {float32(x * 25) - 100.0f, float32(y * 25), 100.0f};
-      PBR pbr;
-      pbr.hexColor  = 0xFFFFFF;//0xE26D5A;
-      pbr.metallic  = (float32)x / (float32)res;
-      pbr.roughness = (float32)y / (float32)res;
-      sphere(state, {p, zero(), one() * 10.0f}, pbr);
+      TransformComponent* t = component_transform({p, zero(), one() * 10.0f});
+      add_component(a, "transform", t);
+
+      PBRMaterial* pbr = material_pbr(t);
+      pbr->set_color(0xFFFFFF);
+      pbr->set_metallic((float32)x / (float32)res);
+      pbr->set_roughness((float32)y / (float32)res);
+
+      add_component(a, "renderer",  component_renderer(app->sphere, pbr));
     }
   }
-
-  Transform playerT = {{0.0f, 8.0f, 0.0f}, zero(), one() * 1.2f};
-  PBR playerPBR = {0xE26D5A, 0.1f, 0.5f};
-  app->player = cube(state, playerT, playerPBR);
 
   app->light = point_light(state, {0xFFFFFF, 35000.0f, zero()});
   point_light(state, {0xFFFFFF, 55000.0f, zero()});
@@ -80,16 +91,6 @@ bool app_tick(OpenGLState* state, Input* input, AppState* app, float64 dt, float
 
   c->set_transform(state, {x,y,z}, {xr,yr,zr});
 
-  Entity* p = app->player;
-  Vec3& pPos = p->transform.position;
-  Vec3& pRot = p->transform.rotation;
-
-  float32 speed = 1.0f;
-  pRot.z += speed * dt *  5;
-  pRot.x += speed * dt * 10;
-  pRot.y += speed * dt * 15;
-  p->set_transform(p->transform);
-
   float32 lSpeed = 0.9f, dist = 250.0f;
   Light* l = app->light;
   Vec3 lPos = l->position;
@@ -104,5 +105,7 @@ bool app_tick(OpenGLState* state, Input* input, AppState* app, float64 dt, float
 
 void app_end(AppState* app) {
   free(app->camera);
+  free(app->light);
+  free(app->sphere);
   free(app);
 }

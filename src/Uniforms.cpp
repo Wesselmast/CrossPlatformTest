@@ -3,6 +3,7 @@
 #include "Types.cpp"
 #include "Math.cpp"
 #include "Color.cpp"
+#include "Macros.cpp"
 
 #include <string>
 #include <cstring>
@@ -12,7 +13,7 @@ typedef void(*fptr_uniformtick)(int32, void*);
 
 template<typename T> 
 inline void uniform_tick(int32 location, T data) {
-  printf("ERR: Uniform not implemented\n");
+  log_("ERR: Uniform not implemented\n");
 }
 
 template<>
@@ -81,7 +82,7 @@ struct Uniform : public BaseUniform {
   }
 
   inline void print_name() override {
-    printf("%s\n", name.c_str());
+    log_("%s\n", name.c_str());
   }
 
   std::string name;

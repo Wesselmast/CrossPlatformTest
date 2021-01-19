@@ -4,7 +4,7 @@
 #include "Light.cpp"
 
 struct AppState {
-  Entity* player;
   Light* light;
+  Mesh* sphere;
   Camera* camera;
 };

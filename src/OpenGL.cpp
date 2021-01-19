@@ -11,10 +11,10 @@
 
 #include "Uniforms.cpp"
 
-struct Entity;
+struct Actor;
 
 struct OpenGLState {
-  std::forward_list<Entity*> entities;
+  std::forward_list<Actor*> actors;
   std::forward_list<BaseUniform*> globalUniforms;
 
   int32 amtOfLights;
@@ -25,7 +25,7 @@ struct OpenGLState {
   uint16 windowHeight;
 };
 
-#include "Entity.cpp"
+#include "Actor.cpp"
 #include "Camera.cpp"
 
 #define RENDERMODE_NORMAL     GL_FILL
@@ -74,20 +74,16 @@ void gl_tick(OpenGLState* state, Camera* c) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   state->cameraPos = c->position;
 
-  for(Entity* e : state->entities) {
-    e->draw(state);
+  for(Actor* a : state->actors) {
+    a->tick(state);
   }
 }
 
 void gl_end(OpenGLState* state) {
   //later add in checking for level saving
 
-  for(Entity* e : state->entities) {
-    destroy_entity_partial(e);
-  }
-  while(!state->entities.empty()) {
-    free(state->entities.front());
-    state->entities.pop_front();
+  while(!state->actors.empty()) {
+    destroy(state, state->actors.front());
   }
 
   uniform_free_list(state->globalUniforms);
