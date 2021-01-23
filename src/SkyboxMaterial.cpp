@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Material.cpp"
+#include "CameraComponent.cpp"
 #include "File.cpp"
 
 uint32 load_cubemap(const char** faces) {
@@ -27,7 +28,7 @@ uint32 load_cubemap(const char** faces) {
 struct SkyboxMaterial : public Material {
   uint32 textureID;
 
-  SkyboxMaterial(OpenGLState* state, Camera* camera) {
+  SkyboxMaterial(OpenGLState* state, CameraComponent* camera) {
     load_shaders("res/shaders/skybox_V.glsl", "res/shaders/skybox_F.glsl");
 
     const char* paths[6] = {
@@ -59,7 +60,7 @@ struct SkyboxMaterial : public Material {
   }
 };
 
-SkyboxMaterial* material_skybox(OpenGLState* state, Camera* c) {
+SkyboxMaterial* material_skybox(OpenGLState* state, CameraComponent* c) {
   return new SkyboxMaterial(state, c);
 }
 

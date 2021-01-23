@@ -6,6 +6,8 @@
 #include "Math.cpp"
 #include "Color.cpp"
 
+#include "TransformComponent.cpp"
+
 #define SHADER_VERTEX   GL_VERTEX_SHADER
 #define SHADER_FRAGMENT GL_FRAGMENT_SHADER
 
@@ -69,3 +71,19 @@ struct Material : public Asset {
   }
 };
 
+struct UnlitMaterial : public Material {
+  Color color;
+
+  UnlitMaterial(TransformComponent* tc, int32 hex) {
+    color = hex_to_color(hex);
+
+    load_shaders("res/shaders/vertex_Unlit.glsl", "res/shaders/fragment_Unlit.glsl");
+
+    uniform(uniforms, "objColor", &color);
+    uniform(uniforms, "model",    &tc->modelMatrix);
+  }
+};
+
+UnlitMaterial* material_unlit(TransformComponent* tc, int32 hex) {
+  return new UnlitMaterial(tc, hex);
+}

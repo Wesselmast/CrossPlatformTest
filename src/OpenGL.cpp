@@ -25,8 +25,7 @@ struct OpenGLState {
 };
 
 #include "Actor.cpp"
-#include "Camera.cpp"
-#include "Light.cpp"
+#include "CameraComponent.cpp"
 
 #define RENDERMODE_NORMAL     GL_FILL
 #define RENDERMODE_WIREFRAME  GL_LINE
@@ -61,8 +60,8 @@ OpenGLState* gl_start() {
 
   OpenGLState* state = new OpenGLState;
 
-  uniform(state->globalUniforms, "viewProj",    &state->vp);
   uniform(state->globalUniforms, "camPos",      &state->cameraPos);
+  uniform(state->globalUniforms, "viewProj",    &state->vp);
   uniform(state->globalUniforms, "amtOfLights", &state->amtOfLights);
 
   uniform(state->globalUniforms, "renderUnlit", &globalRenderUnlit);
@@ -70,9 +69,9 @@ OpenGLState* gl_start() {
   return state;
 }
 
-void gl_tick(OpenGLState* state, Camera* c) {
+void gl_tick(OpenGLState* state, Actor* c) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  state->cameraPos = c->position;
+  get_component<CameraComponent*>(c, "camera")->update(state);
 
   for(RendererComponent* r : state->renderers) {
     r->render(state->globalUniforms);

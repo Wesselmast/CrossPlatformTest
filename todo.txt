@@ -8,6 +8,8 @@ Priorities (in order):
   - A camera, for instance, would just be an actor with just a camera and a transform component
 - gl_tick should just tick the renderercomponents, other components should be ticked in app_tick (I think?!)
 
+- Component dependencies (for camera and light with transform)
+
 - Make 2d perlin with octaves
 - Generate colormap for terrain
 - Modifying terrain based on user input

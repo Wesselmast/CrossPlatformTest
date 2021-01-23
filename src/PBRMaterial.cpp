@@ -10,8 +10,6 @@ struct PBRAttr {
 };
 
 struct PBRMaterial : public Material {
-  Mat4* modelMatrix;
-  Mat4* normalMatrix;
   PBRAttr* attr;
 
   void set_color(int32 hex) {
@@ -28,11 +26,9 @@ struct PBRMaterial : public Material {
 
   void swap_texture() {} //example (for when textures get here)
 
-  PBRMaterial(TransformComponent* t) {
+  PBRMaterial(TransformComponent* tc) {
     attr = new PBRAttr;
 
-    modelMatrix = &t->modelMatrix;
-    normalMatrix = &t->normalMatrix;
     set_color(0xFFFFFF);
     set_metallic(1.0f);
     set_roughness(0.2f);
@@ -42,8 +38,8 @@ struct PBRMaterial : public Material {
     uniform(uniforms, "albedo",    &attr->color);
     uniform(uniforms, "metallic",  &attr->metallic);
     uniform(uniforms, "roughness", &attr->roughness);
-    uniform(uniforms, "model",     modelMatrix);
-    uniform(uniforms, "normalMat", normalMatrix);
+    uniform(uniforms, "model",     &tc->modelMatrix);
+    uniform(uniforms, "normalMat", &tc->normalMatrix);
   }
 
   ~PBRMaterial() {
@@ -51,7 +47,7 @@ struct PBRMaterial : public Material {
   }
 };
 
-PBRMaterial* material_pbr(TransformComponent* t) {
-  return new PBRMaterial(t);
+PBRMaterial* material_pbr(TransformComponent* tc) {
+  return new PBRMaterial(tc);
 }
 
