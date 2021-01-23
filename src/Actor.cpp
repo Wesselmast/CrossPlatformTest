@@ -3,14 +3,17 @@
 #include "Components.cpp"
 #include "Macros.cpp"
 #include <unordered_map>
+#include <forward_list>
+
+struct Actor;
+typedef std::forward_list<Actor*> ActorList;
 
 struct Actor {
+  ActorList* list;
   std::unordered_map<const char*, Component*> components;
 
-  void tick(OpenGLState* state) {
-    for(auto pair : components) {
-      pair.second->tick(state);
-    }
+  Actor(ActorList* list) : list(list) {
+    list->push_front(this);
   }
 
   ~Actor() {
@@ -18,13 +21,12 @@ struct Actor {
       delete itr.second;
     }
     components.clear();
+    list->remove(this);
   }
 };
 
-Actor* actor(OpenGLState* state) {
-  Actor* a = new Actor;
-  state->actors.push_front(a);
-  return a;
+Actor* actor(ActorList& list) {
+  return new Actor(&list);
 }
 
 void add_component(Actor* a, const char* name, Component* c) {
@@ -40,9 +42,3 @@ T get_component(Actor* a, const char* name) {
   }
   return (T)itr->second;
 }
-
-void destroy(OpenGLState* state, Actor* actor) {
-  state->actors.remove(actor);
-  delete actor;
-}
-

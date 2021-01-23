@@ -1,10 +1,15 @@
 #pragma once
-#include "OpenGL.cpp"
-#include "Camera.cpp"
-#include "Light.cpp"
+#include "Actor.cpp"
+#include "Asset.cpp"
+
+struct Light;
+struct Mesh;
+struct Camera;
 
 struct AppState {
+  ActorList actors;
+  AssetMap  aLUT;
+
   Light* light;
-  Mesh* sphere;
   Camera* camera;
 };

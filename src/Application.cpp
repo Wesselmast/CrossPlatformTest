@@ -1,11 +1,12 @@
 #pragma once
 
+#include "OpenGL.cpp"
 #include "AppState.cpp"
 #include "Camera.cpp"
-#include "OpenGL.cpp"
 #include "Input.cpp"
 #include "Math.cpp"
 #include "Light.cpp"
+#include "Camera.cpp"
 
 #include "Actor.cpp"
 #include "PBRMaterial.cpp"
@@ -14,58 +15,56 @@
 #include "RendererComponent.cpp"
 #include "TransformComponent.cpp"
 
-Actor* actor_skybox(OpenGLState* state, Camera* camera) {
-  Actor* a = actor(state);
+Actor* actor_skybox(OpenGLState* state, AppState* app, Camera* camera) {
+  Actor* a = actor(app->actors);
   SkyboxMaterial* skyMat = material_skybox(state, camera);
-  add_component(a, "renderer", component_renderer(mesh_simple_inverted_cube(), skyMat));
+  add_component(a, "renderer", component_renderer(state->renderers, mesh_simple_inverted_cube(app->aLUT), skyMat));
   return a;
 }
 
-Actor* actor_generic(OpenGLState* state, const Transform& t) {
-  Actor* a = actor(state); 
-
-  TransformComponent* tc = component_transform(t);
-  add_component(a, "transform", tc);
-
-  //TODO: this is not pretty!
-  add_component(a, "renderer",  component_renderer(mesh_cube(), material_pbr(tc)));
-
+Actor* actor_generic(OpenGLState* state, AppState* app, const Transform& t) {
+  Actor* a = actor(app->actors); 
+  add_component(a, "transform", component_transform(t));
+  add_component(a, "renderer",  component_renderer(state->renderers));
   return a;
 }
 
-Actor* actor_terrain(OpenGLState* state, const Transform& t) {
-  Actor* a = actor_generic(state, t);
+Actor* actor_terrain(OpenGLState* state, AppState* app, const Transform& t) {
+  Actor* a = actor_generic(state, app, t);
 
   TransformComponent* tc = get_component<TransformComponent*>(a, "transform"); 
   RendererComponent*  r  = get_component<RendererComponent*>(a, "renderer");
   
-  r->set_mesh(mesh_terrain(256));
+  r->set_mesh(mesh_terrain(app->aLUT, 1024));
   r->set_material(material_terrain(tc));
 
   return a;
 }
 
-Actor* actor_pbr_sphere(OpenGLState* state, const Transform& t, Mesh* sphere, float32 roughness, float32 metallic) {
-  Actor* a = actor_generic(state, t);
+Actor* actor_pbr_sphere(OpenGLState* state, AppState* app, const Transform& t, float32 roughness, float32 metallic) {
+  Actor* a = actor_generic(state, app, t);
 
-  RendererComponent* r = get_component<RendererComponent*>(a, "renderer");
+  TransformComponent* tc = get_component<TransformComponent*>(a, "transform"); 
+  RendererComponent*  r  = get_component<RendererComponent*>(a, "renderer");
 
-  r->set_mesh(sphere);
-  PBRMaterial* pbr = (PBRMaterial*)r->material;
+  r->set_mesh(mesh_sphere(app->aLUT));
+  PBRMaterial* pbr = material_pbr(tc); 
   pbr->set_roughness(roughness);
   pbr->set_metallic(metallic);
+  r->set_material(pbr);
 
   return a;
 }
 
-
 AppState* app_start(OpenGLState* state, Input* input) {
-  AppState* app = (AppState*)malloc(sizeof(AppState));
+  AppState* app = new AppState;
   app->camera = create_camera(state);
-  app->sphere = mesh_sphere();
 
-  actor_skybox(state, app->camera);
-  actor_terrain(state, {{500.0f, -300.0f, 100.0f}, zero(), {100.0f, 250.0f, 100.0f}});
+  actor_skybox(state, app, app->camera);
+  actor_terrain(state, app, {{ 500.0f, -300.0f, 100.0f},  zero(), {100.0f, 250.0f, 100.0f}});
+  actor_terrain(state, app, {{ 500.0f, -300.0f, 1100.0f}, zero(), {100.0f, 250.0f, 100.0f}});
+  actor_terrain(state, app, {{1500.0f, -300.0f, 100.0f},  zero(), {100.0f, 250.0f, 100.0f}});
+  actor_terrain(state, app, {{-500.0f, -300.0f, 100.0f},  zero(), {100.0f, 250.0f, 100.0f}});
 
   const int32 res = 10;
   for(int x = 0; x < res; ++x) {
@@ -76,13 +75,13 @@ AppState* app_start(OpenGLState* state, Input* input) {
       float32 metallic  = (float32)x / (float32)res;
       float32 roughness = (float32)y / (float32)res;
 
-      actor_pbr_sphere(state, tS, app->sphere, roughness, metallic);
+      actor_pbr_sphere(state, app, tS, roughness, metallic);
     }
   }
 
-  app->light = point_light(state, {0xFFFFFF, 35000.0f, zero()});
-  point_light(state, {0xFFFFFF, 55000.0f, zero()});
-  point_light(state, {0xFFFFFF, 45000.0f, {200.0f, 0.0f, 0.0f}});
+  app->light = point_light(state, app, {0xFFFFFF, 35000.0f, zero()});
+  point_light(state, app, {0xFFFFFF, 55000.0f, zero()});
+  point_light(state, app, {0xFFFFFF, 45000.0f, {200.0f, 0.0f, 0.0f}});
 
   register_key_down(input, KEY_F3, [](){ set_rendermode(RENDERMODE_WIREFRAME); });
   register_key_down(input, KEY_F4, [](){ set_rendermode(RENDERMODE_NORMAL);    });
@@ -139,8 +138,18 @@ bool app_tick(OpenGLState* state, Input* input, AppState* app, float64 dt, float
 }
 
 void app_end(AppState* app) {
-  free(app->camera);
-  free(app->light);
-  free(app->sphere);
-  free(app);
+  while(!app->actors.empty()) {
+    //TODO: this causes a segfault.. look into why
+    //delete app->actors.front();
+    app->actors.pop_front();
+  }
+  for(auto itr : app->aLUT) {
+    delete itr.second;
+  }
+  app->aLUT.clear();
+
+  //TODO: Camera and light should become components
+  delete app->camera;
+  delete app->light;
+  delete app;
 }

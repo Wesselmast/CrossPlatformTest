@@ -71,6 +71,8 @@ struct BaseUniform {
   virtual void print_name() = 0;
 };
 
+typedef std::forward_list<BaseUniform*> UniformList;
+
 template<typename T>
 struct Uniform : public BaseUniform {
   Uniform(const std::string& name, T data) : data(data), name(name) {
@@ -91,17 +93,17 @@ struct Uniform : public BaseUniform {
 
 
 template<typename T>
-void uniform(std::forward_list<BaseUniform*>& uniforms, const std::string& name, T data) {
+void uniform(UniformList& uniforms, const std::string& name, T data) {
   uniforms.emplace_front(new Uniform<T>(name, data));
 }
 
-inline void uniform_tick_list(std::forward_list<BaseUniform*>& uniforms, int32 program) {
+inline void uniform_tick_list(UniformList& uniforms, int32 program) {
   for(BaseUniform* u : uniforms) {
     u->tick(program);
   }
 }
 
-void uniform_free_list(std::forward_list<BaseUniform*>& uniforms) {
+void uniform_free_list(UniformList& uniforms) {
   while(!uniforms.empty()) {
     delete uniforms.front();
     uniforms.pop_front();

@@ -2,6 +2,7 @@
 
 #include "Types.cpp"
 #include "Math.cpp"
+#include "Asset.cpp"
 #include "File.cpp"
 #include "Color.cpp"
 #include "MeshGeneration.cpp"
@@ -9,9 +10,7 @@
 
 #include <vector>
 
-//TODO: There should definately be a way to cache these meshes in a nice way
-
-struct Mesh {
+struct Mesh : public Asset {
   std::vector<float32> vertices;
   uint32 vertexCount; 
   uint32 vertArrSize;
@@ -21,7 +20,11 @@ struct Mesh {
   uint32 indArrSize;
 };
 
-Mesh* mesh_sphere(int32 res = 50) {
+Mesh* mesh_sphere(AssetMap& map, int32 res = 50, const char* name = "mesh_sphere") {
+  bool stored;
+  Mesh* mesh = asset_store<Mesh>(map, name, stored);
+  if(stored) return mesh;
+
   int32 resSqr = res * res;
 
   std::vector<float32> vertices(resSqr * 6, 0.0f);
@@ -44,8 +47,6 @@ Mesh* mesh_sphere(int32 res = 50) {
 
   generate_normals(vertices, indices);
 
-  Mesh* mesh = new Mesh;
-
   mesh->vertices = vertices;
   mesh->vertArrSize = vertices.size() * sizeof(float32);
   mesh->vertexCount = resSqr;
@@ -56,8 +57,10 @@ Mesh* mesh_sphere(int32 res = 50) {
   return mesh;
 }
 
-Mesh* mesh_simple_inverted_cube() {
-  Mesh* mesh = new Mesh;
+Mesh* mesh_simple_inverted_cube(AssetMap& map) {
+  bool stored;
+  Mesh* mesh = asset_store<Mesh>(map, "mesh_simple_inverted_cube", stored);
+  if(stored) return mesh;
 
   mesh->vertices = {
     -1.0f, -1.0f, -1.0f,
@@ -88,7 +91,11 @@ Mesh* mesh_simple_inverted_cube() {
   return mesh;
 }
 
-Mesh* mesh_terrain(int32 res = 256) {
+Mesh* mesh_terrain(AssetMap& map, int32 res = 256, const char* name = "mesh_terrain") {
+  bool stored;
+  Mesh* mesh = asset_store<Mesh>(map, name, stored);
+  if(stored) return mesh;
+
   int32 w, h;
   uint8* img = load_image("res/textures/depth4.png", &w, &h, 1);
 
@@ -127,8 +134,6 @@ Mesh* mesh_terrain(int32 res = 256) {
   generate_normals(vertices, indices);
 
   free_image(img);
-  
-  Mesh* mesh = new Mesh;
 
   mesh->vertices = vertices;
   mesh->vertArrSize = vertices.size() * sizeof(float32);
@@ -140,8 +145,10 @@ Mesh* mesh_terrain(int32 res = 256) {
   return mesh;
 }
 
-Mesh* mesh_cube() {
-  Mesh* mesh = new Mesh;
+Mesh* mesh_cube(AssetMap& map) {
+  bool stored;
+  Mesh* mesh = asset_store<Mesh>(map, "mesh_cube", stored);
+  if(stored) return mesh;
 
   mesh->vertices = {
     // Front face

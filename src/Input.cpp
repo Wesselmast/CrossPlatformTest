@@ -81,12 +81,13 @@ enum {
 #endif
 
 typedef void(*fptr_keyevent)();
+typedef std::forward_list<fptr_keyevent> KeyList;
 
 struct Input {
   bool keyInput[MAXKEYVALUE];
   bool keyFlags[MAXKEYVALUE];
-  std::forward_list<fptr_keyevent> keyDownEvents[MAXKEYVALUE];
-  std::forward_list<fptr_keyevent> keyUpEvents[MAXKEYVALUE];
+  KeyList keyDownEvents[MAXKEYVALUE];
+  KeyList keyUpEvents[MAXKEYVALUE];
   int32 mouseX = 0;
   int32 mouseY = 0;
   int32 lastMouseX = 0;
@@ -111,12 +112,12 @@ void unregister_key_down(Input* input, uint8 key, fptr_keyevent e) {
   input->keyDownEvents[key].remove(e);
 }
 
-void trigger_events(const std::forward_list<fptr_keyevent>& list) {
+void trigger_events(const KeyList& list) {
   for(fptr_keyevent e : list) e();
 }
 
 Input* input_start() {
-  return (Input*)malloc(sizeof(Input));
+  return new Input; 
 }
 
 void input_end(Input* input) {
@@ -124,7 +125,7 @@ void input_end(Input* input) {
     input->keyDownEvents[key].clear();
     input->keyUpEvents[key].clear();
   }
-  free(input);
+  delete input;
 }
 
 void input_tick(Input* input) {

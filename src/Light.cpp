@@ -8,6 +8,8 @@
 #include "TransformComponent.cpp"
 #include "RendererComponent.cpp"
 
+#include "AppState.cpp"
+
 #include <string>
 
 struct LightAttributes {
@@ -28,12 +30,12 @@ struct Light {
     position = p;
   }
 
-  Light* init(OpenGLState* state, const LightAttributes& attr, int32 index) {
+  Light(OpenGLState* state, AppState* app, const LightAttributes& attr, int32 index) {
     position = attr.position;
     radius   = attr.radius;
     color    = hex_to_color(attr.hexcolor);
 
-    Actor* gizmo = actor(state);
+    Actor* gizmo = actor(app->actors);
     gizmoT = component_transform({position, zero(), one()});
     add_component(gizmo, "transform", gizmoT);
     
@@ -42,7 +44,7 @@ struct Light {
     pbr->set_metallic(0.0f);
     pbr->set_roughness(0.0f);
 
-    add_component(gizmo, "renderer", component_renderer(mesh_sphere(), pbr));
+    add_component(gizmo, "renderer", component_renderer(state->renderers, mesh_sphere(app->aLUT), pbr));
 
     std::string baseStr = "lights[" + std::to_string(index) + "]";
     
@@ -55,14 +57,13 @@ struct Light {
     uniform(state->globalUniforms, radStr, &radius);
     
     state->amtOfLights = index + 1;
-    return this;
   }
 };
 
 //TODO: rework lights a bit so this doesn't leak
 
-Light* point_light(OpenGLState* state, const LightAttributes& attr) {
+Light* point_light(OpenGLState* state, AppState* app, const LightAttributes& attr) {
   static int32 index = 0;
-  return ((Light*)malloc(sizeof(Light)))->init(state, attr, index++);
+  return new Light(state, app, attr, index++);
 }
 

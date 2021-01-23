@@ -47,14 +47,14 @@ struct SkyboxMaterial : public Material {
     uniform(uniforms, "view",       &camera->viewMatrix);
   }
 
-  void render(OpenGLState* state) override {
+  void render(UniformList& globalUniforms) {
     glDepthFunc(GL_LEQUAL);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 
     glUseProgram(program); 
-    uniform_tick_list(state->globalUniforms, program); 
+    uniform_tick_list(globalUniforms, program); 
     uniform_tick_list(uniforms, program);
   }
 };

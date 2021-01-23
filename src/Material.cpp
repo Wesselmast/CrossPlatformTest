@@ -1,17 +1,16 @@
 #pragma once
 
 #include "Uniforms.cpp"
+#include "Asset.cpp"
 #include "File.cpp"
 #include "Math.cpp"
 #include "Color.cpp"
 
-#include <forward_list>
-
 #define SHADER_VERTEX   GL_VERTEX_SHADER
 #define SHADER_FRAGMENT GL_FRAGMENT_SHADER
 
-struct Material {
-  std::forward_list<BaseUniform*> uniforms;
+struct Material : public Asset {
+  UniformList uniforms;
   uint32 program;
 
   const char* shader_type_to_str(int32 type) const {
@@ -59,9 +58,9 @@ struct Material {
     glDeleteShader(fragmentShader);
   }
 
-  virtual void render(OpenGLState* state) {
+  virtual void render(UniformList& globalUniforms) {
     glUseProgram(program); 
-    uniform_tick_list(state->globalUniforms, program); 
+    uniform_tick_list(globalUniforms, program); 
     uniform_tick_list(uniforms, program);
   }
 

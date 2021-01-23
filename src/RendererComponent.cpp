@@ -3,22 +3,34 @@
 #include "Components.cpp"
 #include "Material.cpp"
 #include "Mesh.cpp"
+#include "Uniforms.cpp"
 
-//TODO: the meshes and materials currently leak because they are being shared between actors
+#include <forward_list>
+
+struct RendererComponent;
+typedef std::forward_list<RendererComponent*> RendererComponentList;
 
 struct RendererComponent : public Component {
-  Material* material;
+  RendererComponentList* list;
+
+  Material* material = nullptr;
   Mesh* mesh;
 
   uint32 vertexBuffer;
   uint32 indexBuffer;
 
-  void tick(OpenGLState* state) override {
+  inline bool can_render() {
+    return material && mesh;
+  }
+
+  void render(UniformList& globalUniforms) {
+    if(!can_render()) return;
+
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
     activate_layout(mesh->vertexLayout);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 
-    material->render(state);
+    material->render(globalUniforms);
 
     glDrawElements(GL_TRIANGLES, mesh->indArrSize / sizeof(uint32), GL_UNSIGNED_INT, (void*)0);
 
@@ -41,18 +53,31 @@ struct RendererComponent : public Component {
   }
 
   void set_material(Material* material) {
+    if(this->material) delete this->material;
     this->material = material;
   }
+
+  RendererComponent(RendererComponentList* list) : list(list) {
+    list->push_front(this);
+  }
   
-  RendererComponent(Mesh* mesh, Material* material) {
+  RendererComponent(RendererComponentList* list, Mesh* mesh, Material* material) : list(list) {
     set_mesh(mesh);
     set_material(material);
+    list->push_front(this);
   }
 
   ~RendererComponent() {
+    if(material) delete material;
+    list->remove(this);
   }
 };
 
-RendererComponent* component_renderer(Mesh* mesh, Material* material) {
-  return new RendererComponent(mesh, material);
+
+RendererComponent* component_renderer(RendererComponentList& list, Mesh* mesh, Material* material) {
+  return new RendererComponent(&list, mesh, material);
+}
+
+RendererComponent* component_renderer(RendererComponentList& list) {
+  return new RendererComponent(&list);
 }

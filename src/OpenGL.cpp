@@ -10,12 +10,11 @@
 #include <GL/glu.h>
 
 #include "Uniforms.cpp"
-
-struct Actor;
+#include "RendererComponent.cpp"
 
 struct OpenGLState {
-  std::forward_list<Actor*> actors;
-  std::forward_list<BaseUniform*> globalUniforms;
+  RendererComponentList renderers;
+  UniformList globalUniforms;
 
   int32 amtOfLights;
   
@@ -27,6 +26,7 @@ struct OpenGLState {
 
 #include "Actor.cpp"
 #include "Camera.cpp"
+#include "Light.cpp"
 
 #define RENDERMODE_NORMAL     GL_FILL
 #define RENDERMODE_WIREFRAME  GL_LINE
@@ -59,7 +59,7 @@ OpenGLState* gl_start() {
   glShadeModel(GL_SMOOTH);
   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
-  OpenGLState* state = (OpenGLState*)malloc(sizeof(OpenGLState));
+  OpenGLState* state = new OpenGLState;
 
   uniform(state->globalUniforms, "viewProj",    &state->vp);
   uniform(state->globalUniforms, "camPos",      &state->cameraPos);
@@ -74,17 +74,13 @@ void gl_tick(OpenGLState* state, Camera* c) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   state->cameraPos = c->position;
 
-  for(Actor* a : state->actors) {
-    a->tick(state);
+  for(RendererComponent* r : state->renderers) {
+    r->render(state->globalUniforms);
   }
 }
 
 void gl_end(OpenGLState* state) {
   //later add in checking for level saving
-
-  while(!state->actors.empty()) {
-    destroy(state, state->actors.front());
-  }
 
   uniform_free_list(state->globalUniforms);
   free(state);

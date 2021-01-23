@@ -12,7 +12,7 @@ struct Camera {
   }
 
   Mat4 calculate_projection(uint16 w, uint16 h) {
-    return mat4_perspective_fov(68.0f, (float32)w/(float32)h, 0.1f, 1500.0f);
+    return mat4_perspective_fov(68.0f, (float32)w/(float32)h, 0.1f, 2500.0f);
   }
 
   void set_transform(OpenGLState* state, const Vec3& position, const Vec3& rotation) {
@@ -23,12 +23,11 @@ struct Camera {
     state->vp = get_view_projection();
   }
 
-  Camera* init(OpenGLState* state) {
+  Camera(OpenGLState* state) {
     set_transform(state, zero(), zero());
-    return this;
   }
 };
 
 Camera* create_camera(OpenGLState* state) {
-  return ((Camera*)malloc(sizeof(Camera)))->init(state);
+  return new Camera(state);
 }
