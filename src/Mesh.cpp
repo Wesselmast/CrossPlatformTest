@@ -27,7 +27,7 @@ Mesh* mesh_sphere(AssetMap& map, int32 res = 50, const char* name = "mesh_sphere
 
   int32 resSqr = res * res;
 
-  std::vector<float32> vertices(resSqr * 6, 0.0f);
+  std::vector<float32> vertices(resSqr * 8, 0.0f);
   std::vector<uint32>  indices;
 
   int32 i = 0;
@@ -36,21 +36,23 @@ Mesh* mesh_sphere(AssetMap& map, int32 res = 50, const char* name = "mesh_sphere
     for(int32 x = 0; x < res; ++x) {
       float32 angle2 = x * (pi() * 2) / (res - 1);
 
-      vertices[(i * 6) + 0] = sin(angle1) * cos(angle2);
-      vertices[(i * 6) + 1] = cos(angle1);
-      vertices[(i * 6) + 2] = sin(angle1) * sin(angle2);
+      vertices[(i * 8) + 0] = sin(angle1) * cos(angle2);
+      vertices[(i * 8) + 1] = cos(angle1);
+      vertices[(i * 8) + 2] = sin(angle1) * sin(angle2);
+      vertices[(i * 8) + 6] = vertices[(i * 8) + 0];
+      vertices[(i * 8) + 7] = vertices[(i * 8) + 1];
 
       generate_index(indices, i, z, res, true);
       ++i;
     }
   }
 
-  generate_normals(vertices, indices);
+  generate_normals(vertices, indices, 8);
 
   mesh->vertices = vertices;
   mesh->vertArrSize = vertices.size() * sizeof(float32);
   mesh->vertexCount = resSqr;
-  mesh->vertexLayout = LAYOUT_POSITION_3D | LAYOUT_NORMAL; 
+  mesh->vertexLayout = LAYOUT_POSITION_3D | LAYOUT_NORMAL | LAYOUT_TEXCOORD; 
   mesh->indices = indices;
   mesh->indArrSize = indices.size() * sizeof(uint32);
 
@@ -131,7 +133,7 @@ Mesh* mesh_terrain(AssetMap& map, int32 res = 256, const char* name = "mesh_terr
     }
   }
 
-  generate_normals(vertices, indices);
+  generate_normals(vertices, indices, 6);
 
   free_image(img);
 
@@ -152,45 +154,45 @@ Mesh* mesh_cube(AssetMap& map) {
 
   mesh->vertices = {
     // Front face
-    -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-     1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-     1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-    -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
+    -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
+     1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,  
+     1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+    -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
 
     // Back face
-    -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
-    -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
-     1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
-     1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
+    -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
+    -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
+     1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+     1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
 
     // Top face
-    -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-    -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-     1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-     1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+    -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
+    -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+     1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
+     1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
 
     // Bottom face
-    -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f,
-     1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f,
-     1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f,
-    -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f,
+    -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
+     1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+     1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
+    -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
 
     // Right face
-     1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,
-     1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f,
-     1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,
-     1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,
+     1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+     1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+     1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+     1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
 
     // Left face
-    -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f,
-    -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f,
-    -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f,
-    -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f,
+    -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+    -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+    -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+    -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
   };
 
   mesh->vertArrSize = mesh->vertices.size() * sizeof(float32);
   mesh->vertexCount = 24;
-  mesh->vertexLayout = LAYOUT_POSITION_3D | LAYOUT_NORMAL; 
+  mesh->vertexLayout = LAYOUT_POSITION_3D | LAYOUT_NORMAL | LAYOUT_TEXCOORD; 
 
   mesh->indices = {
      0,  1,  2,  0,  2,  3,

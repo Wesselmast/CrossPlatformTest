@@ -10,6 +10,7 @@ struct Light {
 
 in vec3 fragNormal;
 in vec3 fragPos;
+in vec2 fragTexcoord;
 
 out vec4 color;
 
@@ -19,9 +20,15 @@ uniform vec3 camPos;
 uniform Light lights[MAX_LIGHTS];
 uniform int amtOfLights;
 
-uniform vec3 albedo;
-uniform float metallic;
-uniform float roughness;
+//uniform vec3 albedo;
+//uniform float metallic;
+//uniform float roughness;
+
+uniform sampler2D diffuseMap;
+uniform sampler2D metallicMap;
+uniform sampler2D roughnessMap;
+uniform sampler2D AOMap;
+uniform sampler2D normalMap;
 
 uniform samplerCube skybox;
 
@@ -39,7 +46,7 @@ float distributionGGX(float NdotH, float r) {
   return r4 / max(d, 0.0000001);
 }
 
-float geometrySmith(float NdotV, float NdotL, float r) {
+float geometry_smith(float NdotV, float NdotL, float r) {
   float ra = r + 1.0;
   float k = (ra * ra) / 8.0;
   float ggx1 = NdotV / (NdotV * (1.0 - k) + k);
@@ -47,12 +54,33 @@ float geometrySmith(float NdotV, float NdotL, float r) {
   return ggx1 * ggx2;
 }
 
-vec3 freshnelSchlick(float HdotV, vec3 reflectivity) {
+vec3 freshnel_schlick(float HdotV, vec3 reflectivity) {
   return reflectivity + (1.0 - reflectivity) * pow(1.0 - HdotV, 5.0);
 }
 
+vec3 normal_from_map() {
+  vec3 tangentNormal = texture(normalMap, fragTexcoord).xyz * 2.0 - 1.0;
+
+  vec3 Q1  = dFdx(fragPos);
+  vec3 Q2  = dFdy(fragPos);
+  vec2 st1 = dFdx(fragTexcoord);
+  vec2 st2 = dFdy(fragTexcoord);
+
+  vec3 N   =  normalize(fragNormal);
+  vec3 T   =  normalize(Q1 * st2.t - Q2 * st1.t);
+  vec3 B   = -normalize(cross(N, T));
+  mat3 TBN =  mat3(T, B, N);
+
+  return normalize(TBN * tangentNormal);
+}
+
 void main() {
-  vec3 N = normalize(fragNormal);
+  vec3 albedo     = texture(diffuseMap,   fragTexcoord).rgb;
+  float metallic  = texture(metallicMap,  fragTexcoord).r;
+  float roughness = texture(roughnessMap, fragTexcoord).r;
+  float ao        = texture(AOMap, 	  fragTexcoord).r;
+
+  vec3 N = normal_from_map();
   vec3 V = normalize(camPos - fragPos);
 
   float BM = max(metallic,  0.0000001);
@@ -75,8 +103,8 @@ void main() {
     float HdotV = max(dot(H, V), 0.0);
 
     float D = distributionGGX(NdotH, BR);
-    float G = geometrySmith(NdotV, NdotL, BR);
-    vec3  F = freshnelSchlick(HdotV, R);
+    float G = geometry_smith(NdotV, NdotL, BR);
+    vec3  F = freshnel_schlick(HdotV, R);
 
     vec3 specular = D * G * F;
     specular /= 4.0 * NdotV * NdotL;
@@ -87,7 +115,7 @@ void main() {
     Lo += (kD * albedo / PI + specular) * radiance * NdotL;
   }
 
-  vec3 ambient = albedo * 0.03;
+  vec3 ambient = albedo * 0.03 * ao;
   vec3 lit = ambient + Lo;
   lit = lit / (lit + vec3(1.0));
   lit = pow(lit, vec3(1.0 / 2.2));

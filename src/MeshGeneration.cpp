@@ -17,10 +17,10 @@ inline void generate_index(std::vector<uint32>& indices, uint32 index, int32 dep
 }
 
 
-static inline void set_triangle_normals(std::vector<float32>& vertices, int32 i1, int32 i2, int32 i3) {
-  i1 *= 6;
-  i2 *= 6;
-  i3 *= 6;
+static inline void set_triangle_normals(std::vector<float32>& vertices, int32 i1, int32 i2, int32 i3, uint32 layoutSize) {
+  i1 *= layoutSize;
+  i2 *= layoutSize;
+  i3 *= layoutSize;
 
   Vec3 a = {vertices[i1], vertices[i1 + 1], vertices[i1 + 2]};
   Vec3 b = {vertices[i2], vertices[i2 + 1], vertices[i2 + 2]};
@@ -57,10 +57,10 @@ static inline void set_triangle_normals(std::vector<float32>& vertices, int32 i1
 #endif
 }
 
-static inline void normalize_smooth_normals(std::vector<float32>& vertices, int32 i1, int32 i2, int32 i3) {
-  i1 *= 6;
-  i2 *= 6;
-  i3 *= 6;
+static inline void normalize_smooth_normals(std::vector<float32>& vertices, int32 i1, int32 i2, int32 i3, uint32 layoutSize) {
+  i1 *= layoutSize;
+  i2 *= layoutSize;
+  i3 *= layoutSize;
 
   Vec3 na = vec3_normalize({vertices[i1 + 3], vertices[i1 + 4], vertices[i1 + 5]});
   Vec3 nb = vec3_normalize({vertices[i2 + 3], vertices[i2 + 4], vertices[i2 + 5]});
@@ -79,14 +79,14 @@ static inline void normalize_smooth_normals(std::vector<float32>& vertices, int3
   vertices[i3 + 5] = nc.z;
 }
 
-void generate_normals(std::vector<float32>& vertices, std::vector<uint32>& indices) {
+void generate_normals(std::vector<float32>& vertices, std::vector<uint32>& indices, uint32 layoutSize) {
   for(int32 i = 0; i < indices.size(); i += 3) {
-    set_triangle_normals(vertices, indices[i], indices[i + 1], indices[i + 2]);
+    set_triangle_normals(vertices, indices[i], indices[i + 1], indices[i + 2], layoutSize);
   }
 
 #if SMOOTH_NORMALS
   for(int32 i = 0; i < indices.size(); i += 3) {
-    normalize_smooth_normals(vertices, indices[i], indices[i + 1], indices[i + 2]);
+    normalize_smooth_normals(vertices, indices[i], indices[i + 1], indices[i + 2], layoutSize);
   }
 #endif
 }
