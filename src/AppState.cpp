@@ -6,6 +6,7 @@ struct AppState {
   ActorList actors;
   AssetMap  aLUT;
 
+  Actor* rotatingCube;
   Actor* camera;
   Actor* movingLight;
 };

@@ -55,6 +55,15 @@ Actor* actor_pbr_sphere(OpenGLState* state, AppState* app, const Transform& t, f
   return a;
 }
 
+Actor* actor_pbr_cube(OpenGLState* state, AppState* app, const Transform& t, float32 roughness, float32 metallic) {
+  Actor* a = actor_pbr_sphere(state, app, t, roughness, metallic); 
+
+  RendererComponent* r = get_component<RendererComponent*>(a, "renderer");
+  r->set_mesh(mesh_cube(app->aLUT));
+
+  return a;
+}
+
 Actor* actor_camera(OpenGLState* state, AppState* app, const Transform& t) {
   Actor* a = actor(app->actors);
 
@@ -88,6 +97,8 @@ AppState* app_start(OpenGLState* state, Input* input) {
   actor_terrain(state, app, {{ 500.0f, -300.0f, 1100.0f}, zero(), {100.0f, 250.0f, 100.0f}});
   actor_terrain(state, app, {{1500.0f, -300.0f, 100.0f},  zero(), {100.0f, 250.0f, 100.0f}});
   actor_terrain(state, app, {{-500.0f, -300.0f, 100.0f},  zero(), {100.0f, 250.0f, 100.0f}});
+  
+  app->rotatingCube = actor_pbr_cube(state, app, {{0.0f, -50.0f, 50.0f}, zero(), one() * 5.0f}, 0.9f, 1.0f);
 
   const int32 res = 10;
   for(int x = 0; x < res; ++x) {
@@ -158,6 +169,12 @@ bool app_tick(OpenGLState* state, Input* input, AppState* app, float64 dt, float
   lPos.z = cos(time * lSpeed) * dist;
 
   l->set_position(lPos);
+
+  TransformComponent* rc = get_component<TransformComponent*>(app->rotatingCube, "transform");
+  Vec3 rRC = rc->transform.rotation;
+  rRC.x += 40.0f * dt;
+  rc->set_rotation(rRC);
+
   return is_down(input, KEY_ESCAPE);
 }
 

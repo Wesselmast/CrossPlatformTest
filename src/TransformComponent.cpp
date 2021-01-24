@@ -25,7 +25,7 @@ struct TransformComponent : public Component {
 
   void set_transform(const Transform& t) {
     modelMatrix = mat4_scaling(t.scale) * mat4_euler_rotation(t.rotation) * mat4_translation(t.position);
-    normalMatrix = mat4_transpose(mat4_inverse(modelMatrix)); 
+    normalMatrix = mat4_inverse(modelMatrix); 
     this->transform = t;
   }
 
