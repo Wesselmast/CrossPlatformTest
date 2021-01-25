@@ -11,12 +11,12 @@ struct SkyboxMaterial : public Material {
     load_shaders("res/shaders/skybox_V.glsl", "res/shaders/skybox_F.glsl");
 
     const char* paths[6] = {
-      "res/textures/right.png",
-      "res/textures/left.png",
-      "res/textures/top.png",
-      "res/textures/bottom.png",
-      "res/textures/back.png",
-      "res/textures/front.png",
+      "res/textures/TC_Right.png",
+      "res/textures/TC_Left.png",
+      "res/textures/TC_Top.png",
+      "res/textures/TC_Bottom.png",
+      "res/textures/TC_Back.png",
+      "res/textures/TC_Front.png",
     };
 
     textureID = cubemap_create(map, paths, "cubemap_skybox"); 

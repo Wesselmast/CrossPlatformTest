@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Uniforms.cpp"
-#include "Asset.cpp"
 #include "File.cpp"
 #include "Math.cpp"
 #include "Color.cpp"
@@ -11,7 +10,7 @@
 #define SHADER_VERTEX   GL_VERTEX_SHADER
 #define SHADER_FRAGMENT GL_FRAGMENT_SHADER
 
-struct Material : public Asset {
+struct Material {
   UniformList uniforms;
   uint32 program;
 

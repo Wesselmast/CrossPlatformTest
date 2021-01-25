@@ -47,7 +47,7 @@ float32 clamp(float32 value, float32 min, float32 max) {
   return value;
 }
 
-const float32 pi() {
+const float64 pi() {
   return 3.14159265359f;
 }
 

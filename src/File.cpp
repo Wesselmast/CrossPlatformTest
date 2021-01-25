@@ -9,6 +9,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb/stb_image_write.h"
+
 std::string load_file_as_string(const char* path) {
   std::ifstream stream(path, std::ios::in);
 
@@ -29,6 +32,10 @@ std::string load_file_as_string(const char* path) {
 uint8* load_image(const char* path, int32* width, int32* height, int32 channels) {
   int32 c;
   return stbi_load(path, width, height, &c, channels); 
+}
+
+bool write_image(const char* path, int32 width, int32 height, int32 channels, uint8* data) {
+  return stbi_write_png(path, width, height, channels, data, 0);
 }
 
 void free_image(uint8* img) {

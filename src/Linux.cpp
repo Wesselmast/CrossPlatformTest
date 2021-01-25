@@ -1,8 +1,10 @@
 #define __LINUX__
 
 #include <cstdio>
-#include <chrono>
 #include "Application.cpp"
+
+#include <chrono>
+#include <ctime>
 
 #include <X11/Xlib.h>
 #include <GL/glx.h>
@@ -35,6 +37,8 @@ Cursor allocate_empty_cursor(Display* d, Window& w) { //maybe make a nice interf
 }
 
 int main() {
+  srand(time(0));
+
   Display* d = XOpenDisplay(0);
   Window root = DefaultRootWindow(d);
 

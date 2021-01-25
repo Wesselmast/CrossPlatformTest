@@ -6,6 +6,7 @@
 #include "File.cpp"
 #include "Color.cpp"
 #include "MeshGeneration.cpp"
+#include "Perlin.cpp"
 #include "Layout.cpp"
 
 #include <vector>
@@ -98,14 +99,16 @@ Mesh* mesh_terrain(AssetMap& map, int32 res = 256, const char* name = "mesh_terr
   Mesh* mesh = asset_store<Mesh>(map, name, stored);
   if(stored) return mesh;
 
-  int32 w, h;
-  uint8* img = load_image("res/textures/depth4.png", &w, &h, 1);
-
   int32 scale = 20;
   int32 resSqr = res * res;
 
-  std::vector<float32> vertices(resSqr * 6, 0.0f);
+  int32 freq = 8;
+  float64 period = (float64)freq / (float64)res;
+
+  std::vector<float32> vertices(resSqr * 8, 0.0f);
   std::vector<uint32>  indices;
+
+  perlin_seed = rand();
 
   int32 i = 0;
   for(int32 z = 0; z < res; ++z) {
@@ -114,9 +117,7 @@ Mesh* mesh_terrain(AssetMap& map, int32 res = 256, const char* name = "mesh_terr
       v.x = (float32)x / (float32)res;
       v.z = (float32)z / (float32)res;
 
-      int32 ix = round(v.x * w);
-      int32 iy = round(v.z * h);
-      float32 pixel = (img + (ix + iy * h))[0] / 255.0f;
+      float32 pixel = fractal_noise(x * period, z * period, 6, 0.4);
 
       v.x *= scale;
       v.z *= scale;
@@ -124,23 +125,23 @@ Mesh* mesh_terrain(AssetMap& map, int32 res = 256, const char* name = "mesh_terr
       v.z -= scale * 0.5f;
       v.y  = pixel;
 
-      vertices[(i * 6) + 0] = v.x;
-      vertices[(i * 6) + 1] = v.y;
-      vertices[(i * 6) + 2] = v.z;
+      vertices[(i * 8) + 0] = v.x;
+      vertices[(i * 8) + 1] = v.y;
+      vertices[(i * 8) + 2] = v.z;
+      vertices[(i * 8) + 6] = vertices[(i * 8) + 0];
+      vertices[(i * 8) + 7] = vertices[(i * 8) + 2];
 
       generate_index(indices, i, z, res);
       ++i;
     }
   }
 
-  generate_normals(vertices, indices, 6);
-
-  free_image(img);
+  generate_normals(vertices, indices, 8);
 
   mesh->vertices = vertices;
   mesh->vertArrSize = vertices.size() * sizeof(float32);
   mesh->vertexCount = resSqr;
-  mesh->vertexLayout = LAYOUT_POSITION_3D | LAYOUT_NORMAL; 
+  mesh->vertexLayout = LAYOUT_POSITION_3D | LAYOUT_NORMAL | LAYOUT_TEXCOORD; 
   mesh->indices = indices;
   mesh->indArrSize = indices.size() * sizeof(uint32);
 

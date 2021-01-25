@@ -12,7 +12,7 @@ struct PBRAttr {
 
 struct PBRMaterial : public Material {
   PBRAttr* attr;
-  uint32 mapIDs[5];
+  uint32 mapIDs[4];
 
   void set_color(int32 hex) {
     attr->color = hex_to_color(hex);
@@ -31,7 +31,7 @@ struct PBRMaterial : public Material {
   virtual void render(UniformList& globalUniforms) override {
     glUseProgram(program); 
 
-    for(int32 i = 0; i < 5; ++i) {
+    for(int32 i = 0; i < 4; ++i) {
       glActiveTexture(GL_TEXTURE1 + i);
       glBindTexture(GL_TEXTURE_2D, mapIDs[i]);
     }
@@ -49,18 +49,17 @@ struct PBRMaterial : public Material {
 
     load_shaders("res/shaders/vertex_PBR.glsl", "res/shaders/fragment_PBR.glsl");
 
-    //TODO: TEXTURES SHOULD BE ASSETS JUST LIKE MESHES
-    mapIDs[0] = texture_create(map, "res/textures/T_AmmoCrateRifle_D.png");
-    mapIDs[1] = texture_create(map, "res/textures/T_AmmoCrateRifle_Metallic.png");
-    mapIDs[2] = texture_create(map, "res/textures/T_AmmoCrateRifle_Roughness.png");
-    mapIDs[3] = texture_create(map, "res/textures/T_AmmoCrateRifle_AO.png");
-    mapIDs[4] = texture_create(map, "res/textures/T_AmmoCrateRifle_N.png");
+    mapIDs[0] = texture_create(map, "res/textures/T_Leather_D.jpg");
+    mapIDs[1] = texture_create(map, "res/textures/T_Leather_R.jpg");
+    mapIDs[2] = texture_create(map, "res/textures/T_Leather_AO.jpg");
+    mapIDs[3] = texture_create(map, "res/textures/T_Leather_N.jpg");
+    //mapIDs[4] = 0;//texture_create(map, "res/textures/T_Leather_Metallic.png");
 
     uniform(uniforms, "diffuseMap",   1);
-    uniform(uniforms, "metallicMap",  2);
-    uniform(uniforms, "roughnessMap", 3);
-    uniform(uniforms, "AOMap",        4);
-    uniform(uniforms, "normalMap",    5);
+    uniform(uniforms, "roughnessMap", 2);
+    uniform(uniforms, "AOMap",        3);
+    uniform(uniforms, "normalMap",    4);
+    uniform(uniforms, "metallicMap",  5);
   
     uniform(uniforms, "albedo",    &attr->color);
     uniform(uniforms, "metallic",  &attr->metallic);
