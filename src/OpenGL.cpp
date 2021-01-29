@@ -10,10 +10,10 @@
 #include <GL/glu.h>
 
 #include "Uniforms.cpp"
-#include "RendererComponent.cpp"
+#include "Batch.cpp"
 
 struct OpenGLState {
-  RendererComponentList renderers;
+  BatchMap batches;
   UniformList globalUniforms;
 
   int32 amtOfLights;
@@ -25,6 +25,7 @@ struct OpenGLState {
 };
 
 #include "Actor.cpp"
+#include "RendererComponent.cpp"
 #include "CameraComponent.cpp"
 
 #define RENDERMODE_NORMAL     GL_FILL
@@ -73,8 +74,13 @@ void gl_tick(OpenGLState* state, Actor* c) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   get_component<CameraComponent*>(c, "camera")->update(state);
 
-  for(RendererComponent* r : state->renderers) {
-    r->render(state->globalUniforms);
+  for(auto& batch : state->batches.map) {
+    batch.first->prepare_render();
+    for(RendererComponent* r : batch.second) {
+      r->render(state->globalUniforms);
+    }
+
+    // ADD DRAW CALL HERE (figure out how..)
   }
 }
 

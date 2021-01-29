@@ -75,14 +75,14 @@ void camera_movement(Input* input, Actor* actor, float64 dt, float64 time) {
 Actor* actor_skybox(OpenGLState* state, AppState* app, CameraComponent* camera) {
   Actor* a = actor(app->actors);
   SkyboxMaterial* skyMat = material_skybox(state, camera, app->aLUT);
-  add_component(a, "renderer", component_renderer(state->renderers, mesh_simple_inverted_cube(app->aLUT), skyMat));
+  add_component(a, "renderer", component_renderer(state->batches, mesh_simple_inverted_cube(app->aLUT), skyMat));
   return a;
 }
 
 Actor* actor_generic(OpenGLState* state, AppState* app, const Transform& t) {
   Actor* a = actor(app->actors); 
   add_component(a, "transform", component_transform(t));
-  add_component(a, "renderer",  component_renderer(state->renderers));
+  add_component(a, "renderer",  component_renderer(state->batches));
   return a;
 }
 

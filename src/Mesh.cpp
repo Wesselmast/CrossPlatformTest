@@ -19,6 +19,30 @@ struct Mesh : public Asset {
   
   std::vector<uint32> indices;
   uint32 indArrSize;
+  uint32 runTimeArrSize;
+
+  uint32 vertexBuffer;
+  uint32 indexBuffer;
+
+  Mesh* init() {
+    glGenBuffers(1, &vertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, vertArrSize, &vertices[0], GL_STATIC_DRAW);
+
+    glGenBuffers(1, &indexBuffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer); 
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indArrSize, &indices[0], GL_STATIC_DRAW);
+
+    runTimeArrSize = indArrSize / sizeof(uint32);
+
+    return this;
+  }
+
+  void prepare_render() {
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    activate_layout(vertexLayout);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+  }
 };
 
 Mesh* mesh_sphere(AssetMap& map, int32 res = 50, const char* name = "mesh_sphere") {
@@ -57,7 +81,7 @@ Mesh* mesh_sphere(AssetMap& map, int32 res = 50, const char* name = "mesh_sphere
   mesh->indices = indices;
   mesh->indArrSize = indices.size() * sizeof(uint32);
 
-  return mesh;
+  return mesh->init();
 }
 
 Mesh* mesh_simple_inverted_cube(AssetMap& map) {
@@ -91,7 +115,7 @@ Mesh* mesh_simple_inverted_cube(AssetMap& map) {
 
   mesh->indArrSize = mesh->indices.size() * sizeof(uint32);
 
-  return mesh;
+  return mesh->init();
 }
 
 Mesh* mesh_terrain(AssetMap& map, int32 res = 256, const char* name = "mesh_terrain") {
@@ -145,7 +169,7 @@ Mesh* mesh_terrain(AssetMap& map, int32 res = 256, const char* name = "mesh_terr
   mesh->indices = indices;
   mesh->indArrSize = indices.size() * sizeof(uint32);
 
-  return mesh;
+  return mesh->init();
 }
 
 Mesh* mesh_cube(AssetMap& map) {
@@ -206,5 +230,5 @@ Mesh* mesh_cube(AssetMap& map) {
 
   mesh->indArrSize = mesh->indices.size() * sizeof(uint32);
 
-  return mesh;
+  return mesh->init();
 }
