@@ -74,8 +74,14 @@ void camera_movement(Input* input, Actor* actor, float64 dt, float64 time) {
 
 Actor* actor_skybox(OpenGLState* state, AppState* app, CameraComponent* camera) {
   Actor* a = actor(app->actors);
-  SkyboxMaterial* skyMat = material_skybox(state, camera, app->aLUT);
-  add_component(a, "renderer", component_renderer(state->batches, mesh_simple_inverted_cube(app->aLUT), skyMat));
+  
+  Batch batch;
+  batch.mesh     = mesh_simple_inverted_cube(app->aLUT);
+  batch.material = material_skybox(app->aLUT, state, camera); 
+  batch.tc       = component_transform(zero_t()); 
+
+  add_component(a, "transform", batch.tc);
+  add_component(a, "renderer",  component_renderer(state->batches, batch));
   return a;
 }
 
@@ -90,10 +96,11 @@ Actor* actor_terrain(OpenGLState* state, AppState* app, const Transform& t) {
   Actor* a = actor_generic(state, app, t);
 
   TransformComponent* tc = get_component<TransformComponent*>(a, "transform"); 
-  RendererComponent*  r  = get_component<RendererComponent*>(a, "renderer");
+  RendererComponent*  r  = get_component<RendererComponent*>(a,  "renderer");
   
   r->set_mesh(mesh_terrain(app->aLUT, 512));
-  r->set_material(material_terrain(tc, app->aLUT));
+  r->set_material(material_terrain(app->aLUT));
+  r->set_transform_component(tc);
 
   return a;
 }
@@ -104,11 +111,13 @@ Actor* actor_pbr_sphere(OpenGLState* state, AppState* app, const Transform& t, f
   TransformComponent* tc = get_component<TransformComponent*>(a, "transform"); 
   RendererComponent*  r  = get_component<RendererComponent*>(a, "renderer");
 
-  r->set_mesh(mesh_sphere(app->aLUT));
-  PBRMaterial* pbr = material_pbr(tc, app->aLUT); 
+  PBRMaterial* pbr = material_pbr(app->aLUT); 
   pbr->set_roughness(roughness);
   pbr->set_metallic(metallic);
+
+  r->set_mesh(mesh_sphere(app->aLUT));
   r->set_material(pbr);
+  r->set_transform_component(tc);
 
   return a;
 }
@@ -142,7 +151,7 @@ Actor* actor_point_light(OpenGLState* state, AppState* app, const Vec3& v, const
   RendererComponent*  r  = get_component<RendererComponent*>(a, "renderer");
 
   r->set_mesh(mesh_cube(app->aLUT));
-  r->set_material(material_unlit(tc, attr.hexcolor));
+  r->set_material(material_unlit(app->aLUT, attr.hexcolor));
 
   add_component(a, "light", component_light(state, attr, tc));
   return a;
@@ -153,14 +162,14 @@ AppState* app_start(OpenGLState* state, Input* input) {
   app->camera = actor_camera(state, app, zero_t());
 
   actor_skybox(state, app, get_component<CameraComponent*>(app->camera, "camera"));
-  actor_terrain(state, app, {{ 500.0f, -300.0f, 100.0f},  zero(), {100.0f, 250.0f, 100.0f}});
+  actor_terrain(state, app, {{ 500.0f, -1500.0f, 100.0f},  zero(), {1000.0f, 2500.0f, 1000.0f}});
   //actor_terrain(state, app, {{ 500.0f, -300.0f, 1100.0f}, zero(), {100.0f, 250.0f, 100.0f}});
   //actor_terrain(state, app, {{1500.0f, -300.0f, 100.0f},  zero(), {100.0f, 250.0f, 100.0f}});
   //actor_terrain(state, app, {{-500.0f, -300.0f, 100.0f},  zero(), {100.0f, 250.0f, 100.0f}});
   
   actor_pbr_cube(state, app, {{0.0f, -50.0f, 50.0f}, zero(), one() * 5.0f}, 0.9f, 1.0f);
 
-  const int32 res = 10;
+  const int32 res = 5;
   for(int x = 0; x < res; ++x) {
     for(int y = 0; y < res; ++y) {
       Transform tS = zero_t();

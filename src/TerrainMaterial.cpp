@@ -1,12 +1,9 @@
 #pragma once
 
 #include "Material.cpp"
-#include "TransformComponent.cpp"
 #include "Texture.cpp"
 
 struct TerrainMaterial : public Material {
-  Mat4* modelMatrix;
-  Mat4* normalMatrix;
   uint32 mapIDs[3];
 
   virtual void render(UniformList& globalUniforms) override {
@@ -21,10 +18,7 @@ struct TerrainMaterial : public Material {
     uniform_tick_list(uniforms, program);
   }
 
-  TerrainMaterial(TransformComponent* t, AssetMap& map) {
-    modelMatrix = &t->modelMatrix;
-    normalMatrix = &t->normalMatrix;
-
+  TerrainMaterial(AssetMap& map) {
     load_shaders("res/shaders/terrainV.glsl", "res/shaders/terrainF.glsl");
 
     mapIDs[0] = texture_create(map, "res/textures/T_Grass.jpg");
@@ -34,12 +28,10 @@ struct TerrainMaterial : public Material {
     uniform(uniforms, "grassMap",   1);
     uniform(uniforms, "rocksMap",   2);
     uniform(uniforms, "snowMap",    3);
-
-    uniform(uniforms, "model",     modelMatrix);
-    uniform(uniforms, "normalMat", normalMatrix);
   }
 };
 
-TerrainMaterial* material_terrain(TransformComponent* t, AssetMap& map) {
-  return new TerrainMaterial(t, map);  
+TerrainMaterial* material_terrain(AssetMap& map) {
+  bool stored;
+  return asset_store<TerrainMaterial>(map, "material_terrain", stored, map); 
 }

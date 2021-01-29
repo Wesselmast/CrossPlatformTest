@@ -29,6 +29,11 @@ struct TransformComponent : public Component {
     this->transform = t;
   }
 
+  void render(uint32 program) {
+    uniform_tick(glGetUniformLocation(program, "model"),     &modelMatrix);
+    uniform_tick(glGetUniformLocation(program, "normalMat"), &normalMatrix);
+  }
+
   TransformComponent(const Transform& t) {
     set_transform(t);
   }

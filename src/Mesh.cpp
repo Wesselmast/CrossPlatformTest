@@ -38,10 +38,14 @@ struct Mesh : public Asset {
     return this;
   }
 
-  void prepare_render() {
+  void prepare_draw() {
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
     activate_layout(vertexLayout);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+  }
+
+  void draw() {
+    glDrawElements(GL_TRIANGLES, runTimeArrSize, GL_UNSIGNED_INT, (void*)0);
   }
 };
 

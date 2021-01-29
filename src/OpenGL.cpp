@@ -74,13 +74,15 @@ void gl_tick(OpenGLState* state, Actor* c) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   get_component<CameraComponent*>(c, "camera")->update(state);
 
-  for(auto& batch : state->batches.map) {
-    batch.first->prepare_render();
-    for(RendererComponent* r : batch.second) {
-      r->render(state->globalUniforms);
+  for(auto& matB : state->batches.map) {
+    matB.first->render(state->globalUniforms);
+    for(auto& meshB : matB.second) {
+      meshB.first->prepare_draw();
+      for(TransformComponent* t : meshB.second) {
+	t->render(matB.first->program);
+	meshB.first->draw();
+      }
     }
-
-    // ADD DRAW CALL HERE (figure out how..)
   }
 }
 

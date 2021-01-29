@@ -1,7 +1,6 @@
 #pragma once
 #include "Material.cpp"
 #include "Color.cpp"
-#include "TransformComponent.cpp"
 #include "Texture.cpp"
 
 struct PBRAttr {
@@ -40,7 +39,7 @@ struct PBRMaterial : public Material {
     uniform_tick_list(uniforms, program);
   }
 
-  PBRMaterial(TransformComponent* tc, AssetMap& map) {
+  PBRMaterial(AssetMap& map) {
     attr = new PBRAttr;
 
     set_color(0xFFFFFF);
@@ -64,8 +63,6 @@ struct PBRMaterial : public Material {
     uniform(uniforms, "albedo",    &attr->color);
     uniform(uniforms, "metallic",  &attr->metallic);
     uniform(uniforms, "roughness", &attr->roughness);
-    uniform(uniforms, "model",     &tc->modelMatrix);
-    uniform(uniforms, "normalMat", &tc->normalMatrix);
   }
 
   ~PBRMaterial() {
@@ -73,7 +70,8 @@ struct PBRMaterial : public Material {
   }
 };
 
-PBRMaterial* material_pbr(TransformComponent* tc, AssetMap& map) {
-  return new PBRMaterial(tc, map);
+PBRMaterial* material_pbr(AssetMap& map) {
+  bool stored;
+  return asset_store<PBRMaterial>(map, "material_pbr", stored, map); 
 }
 

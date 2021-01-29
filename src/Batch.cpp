@@ -3,18 +3,29 @@
 #include <unordered_map>
 #include <unordered_set>
 
-struct RendererComponent;
+struct TransformComponent;
+struct Material;
 struct Mesh;
 
-struct BatchMap {
-  std::unordered_map<Mesh*, std::unordered_set<RendererComponent*>> map;
+struct Batch {
+  Material* material = nullptr;
+  Mesh* mesh = nullptr;
+  TransformComponent* tc = nullptr;
+};
 
-  void insert(Mesh* key, RendererComponent* value, Mesh* valueMesh) {
-    if(valueMesh) map[valueMesh].erase(value);
-    map[key].insert(value);
+struct BatchMap {
+  std::unordered_map<Material*, std::unordered_map<Mesh*, std::unordered_set<TransformComponent*>>> map;
+
+  void insert(Material* nKey1, Mesh* nKey2, Material* oKey1, Mesh* oKey2, TransformComponent* value) {
+    if(nKey1 && nKey2 && value) {
+      if(oKey1 && oKey2) {
+        map[oKey1][oKey2].erase(value);
+      }
+      map[nKey1][nKey2].insert(value);
+    }
   }
 
-  void remove(Mesh* key, RendererComponent* value) {
-    if(key) map[key].erase(value);
+  void remove(Batch& b) {
+    if(b.material && b.mesh && b.tc) map[b.material][b.mesh].erase(b.tc);
   }
 };

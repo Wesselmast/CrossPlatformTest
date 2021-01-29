@@ -7,7 +7,7 @@
 struct SkyboxMaterial : public Material {
   uint32 textureID;
 
-  SkyboxMaterial(OpenGLState* state, CameraComponent* camera, AssetMap& map) {
+  SkyboxMaterial(AssetMap& map, OpenGLState* state, CameraComponent* camera) {
     load_shaders("res/shaders/skybox_V.glsl", "res/shaders/skybox_F.glsl");
 
     const char* paths[6] = {
@@ -39,7 +39,8 @@ struct SkyboxMaterial : public Material {
   }
 };
 
-SkyboxMaterial* material_skybox(OpenGLState* state, CameraComponent* c, AssetMap& map) {
-  return new SkyboxMaterial(state, c, map);
+SkyboxMaterial* material_skybox(AssetMap& map, OpenGLState* state, CameraComponent* c) {
+  bool stored;
+  return asset_store<SkyboxMaterial>(map, "material_skybox", stored, map, state, c); 
 }
 
