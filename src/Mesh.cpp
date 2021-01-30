@@ -24,14 +24,21 @@ struct Mesh : public Asset {
   uint32 vertexBuffer;
   uint32 indexBuffer;
 
-  Mesh* init() {
+  void bind_vb(bool dynamic = false) {
     glGenBuffers(1, &vertexBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, vertArrSize, &vertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertArrSize, &vertices[0], dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+  }
 
+  void bind_ib(bool dynamic = false) {
     glGenBuffers(1, &indexBuffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer); 
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indArrSize, &indices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indArrSize, &indices[0], dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+  }
+
+  Mesh* init(bool dynamic = false) {
+    bind_vb(dynamic);
+    bind_ib(dynamic);
 
     runTimeArrSize = indArrSize / sizeof(uint32);
 
@@ -173,7 +180,7 @@ Mesh* mesh_terrain(AssetMap& map, int32 res = 256, const char* name = "mesh_terr
   mesh->indices = indices;
   mesh->indArrSize = indices.size() * sizeof(uint32);
 
-  return mesh->init();
+  return mesh->init(true);
 }
 
 Mesh* mesh_cube(AssetMap& map) {
