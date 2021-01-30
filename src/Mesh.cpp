@@ -37,10 +37,12 @@ struct Mesh : public Asset {
   }
 
   Mesh* init(bool dynamic = false) {
+    vertArrSize = vertices.size() * sizeof(float32);
+    indArrSize  = indices.size()  * sizeof(uint32);
+    runTimeArrSize = indices.size();
+
     bind_vb(dynamic);
     bind_ib(dynamic);
-
-    runTimeArrSize = indArrSize / sizeof(uint32);
 
     return this;
   }
@@ -86,11 +88,9 @@ Mesh* mesh_sphere(AssetMap& map, int32 res = 50, const char* name = "mesh_sphere
   generate_normals(vertices, indices, 8);
 
   mesh->vertices = vertices;
-  mesh->vertArrSize = vertices.size() * sizeof(float32);
   mesh->vertexCount = resSqr;
   mesh->vertexLayout = LAYOUT_POSITION_3D | LAYOUT_NORMAL | LAYOUT_TEXCOORD; 
   mesh->indices = indices;
-  mesh->indArrSize = indices.size() * sizeof(uint32);
 
   return mesh->init();
 }
@@ -111,7 +111,6 @@ Mesh* mesh_simple_inverted_cube(AssetMap& map) {
      1.0f,  1.0f,  1.0f,
   };
 
-  mesh->vertArrSize = mesh->vertices.size() * sizeof(float32);
   mesh->vertexCount = 8;
   mesh->vertexLayout = LAYOUT_POSITION_3D; 
 
@@ -124,12 +123,10 @@ Mesh* mesh_simple_inverted_cube(AssetMap& map) {
     5, 7, 4,  7, 6, 4,
   };
 
-  mesh->indArrSize = mesh->indices.size() * sizeof(uint32);
-
   return mesh->init();
 }
 
-Mesh* mesh_terrain(AssetMap& map, int32 res = 256, const char* name = "mesh_terrain") {
+Mesh* mesh_terrain(AssetMap& map, int32 res = 256, int32 freq = 6, const char* name = "mesh_terrain") {
   bool stored;
   Mesh* mesh = asset_store<Mesh>(map, name, stored);
   if(stored) return mesh;
@@ -137,7 +134,6 @@ Mesh* mesh_terrain(AssetMap& map, int32 res = 256, const char* name = "mesh_terr
   int32 scale = 20;
   int32 resSqr = res * res;
 
-  int32 freq = 8;
   float64 period = (float64)freq / (float64)res;
 
   std::vector<float32> vertices(resSqr * 8, 0.0f);
@@ -174,11 +170,9 @@ Mesh* mesh_terrain(AssetMap& map, int32 res = 256, const char* name = "mesh_terr
   generate_normals(vertices, indices, 8);
 
   mesh->vertices = vertices;
-  mesh->vertArrSize = vertices.size() * sizeof(float32);
   mesh->vertexCount = resSqr;
   mesh->vertexLayout = LAYOUT_POSITION_3D | LAYOUT_NORMAL | LAYOUT_TEXCOORD; 
   mesh->indices = indices;
-  mesh->indArrSize = indices.size() * sizeof(uint32);
 
   return mesh->init(true);
 }
@@ -226,7 +220,6 @@ Mesh* mesh_cube(AssetMap& map) {
     -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
   };
 
-  mesh->vertArrSize = mesh->vertices.size() * sizeof(float32);
   mesh->vertexCount = 24;
   mesh->vertexLayout = LAYOUT_POSITION_3D | LAYOUT_NORMAL | LAYOUT_TEXCOORD; 
 
@@ -239,7 +232,27 @@ Mesh* mesh_cube(AssetMap& map) {
     20, 21, 22, 20, 22, 23,
   };
 
-  mesh->indArrSize = mesh->indices.size() * sizeof(uint32);
+  return mesh->init();
+}
+
+Mesh* mesh_plane(AssetMap& map) {
+  bool stored;
+  Mesh* mesh = asset_store<Mesh>(map, "mesh_plane", stored);
+  if(stored) return mesh;
+
+  mesh->vertices = {
+    -1.0f,  0.0f,  1.0f, 
+     1.0f,  0.0f,  1.0f, 
+     1.0f,  0.0f, -1.0f, 
+    -1.0f,  0.0f, -1.0f, 
+  };
+
+  mesh->vertexCount = 4;
+  mesh->vertexLayout = LAYOUT_POSITION_3D;
+
+  mesh->indices = {
+    0, 1, 2, 0, 2, 3,
+  };
 
   return mesh->init();
 }

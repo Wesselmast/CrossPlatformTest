@@ -36,6 +36,8 @@ void moving_light_tick(Input* input, Actor* actor, float64 dt, float64 time) {
 }
 
 void camera_movement(Input* input, Actor* actor, float64 dt, float64 time) {
+  if(!globalConfinedCursor) return;
+
   TransformComponent* c = get_component<TransformComponent*>(actor, "transform");
   Transform& ct = c->transform;
 
@@ -143,6 +145,19 @@ Actor* actor_camera(OpenGLState* state, AppState* app, const Transform& t) {
   return a;
 }
 
+Actor* actor_water_plane(OpenGLState* state, AppState* app, const Transform& t) {
+  Actor* a = actor_generic(state, app, t);
+
+  TransformComponent* tc = get_component<TransformComponent*>(a, "transform"); 
+  RendererComponent*  r  = get_component<RendererComponent*>(a, "renderer");
+
+  r->set_mesh(mesh_plane(app->aLUT));
+  r->set_material(material_unlit(app->aLUT, 0x0000FF, "material_unlit_water"));
+  r->set_transform_component(tc);
+
+  return a;
+}
+
 Actor* actor_point_light(OpenGLState* state, AppState* app, const Vec3& v, const LightAttributes& attr) {
   Transform t = {v, zero(), one()};
   Actor* a = actor_generic(state, app, t);
@@ -152,6 +167,7 @@ Actor* actor_point_light(OpenGLState* state, AppState* app, const Vec3& v, const
 
   r->set_mesh(mesh_cube(app->aLUT));
   r->set_material(material_unlit(app->aLUT, attr.hexcolor));
+  r->set_transform_component(tc);
 
   add_component(a, "light", component_light(state, attr, tc));
   return a;
@@ -162,7 +178,15 @@ AppState* app_start(OpenGLState* state, Input* input) {
   app->camera = actor_camera(state, app, zero_t());
 
   actor_skybox(state, app, get_component<CameraComponent*>(app->camera, "camera"));
-  actor_terrain(state, app, {{ 500.0f, -1500.0f, 100.0f},  zero(), {1000.0f, 2500.0f, 1000.0f}});
+  
+  
+  Transform terrainT = {{ 500.0f, -300.0f, 100.0f},  zero(), {100.0f, 250.0f, 100.0f}};
+  actor_terrain(state, app, terrainT); 
+  Transform waterT = terrainT;
+  waterT.scale = waterT.scale * 10.0f;
+  waterT.position.y = -200.0f;
+  actor_water_plane(state, app, waterT);
+
   //actor_terrain(state, app, {{ 500.0f, -300.0f, 1100.0f}, zero(), {100.0f, 250.0f, 100.0f}});
   //actor_terrain(state, app, {{1500.0f, -300.0f, 100.0f},  zero(), {100.0f, 250.0f, 100.0f}});
   //actor_terrain(state, app, {{-500.0f, -300.0f, 100.0f},  zero(), {100.0f, 250.0f, 100.0f}});
@@ -187,9 +211,12 @@ AppState* app_start(OpenGLState* state, Input* input) {
   actor_point_light(state, app, zero(), {0xFFDD88, 55000.0f});
   actor_point_light(state, app, {200.0f, 0.0f, 0.0f}, {0x884433, 45000.0f}); 
 
-  register_key_down(input, KEY_F3, [](){ set_rendermode(RENDERMODE_WIREFRAME); });
-  register_key_down(input, KEY_F4, [](){ set_rendermode(RENDERMODE_NORMAL);    });
-  register_key_down(input, KEY_F5, [](){ set_rendermode(RENDERMODE_POINT);     });
+  register_key_down(input, KEY_ALT, []() { confine_cursor(false); });
+  register_key_up(  input, KEY_ALT, []() { confine_cursor(true);  });
+
+  register_key_down(input, KEY_F3,  [](){ set_rendermode(RENDERMODE_WIREFRAME); });
+  register_key_down(input, KEY_F4,  [](){ set_rendermode(RENDERMODE_NORMAL);    });
+  register_key_down(input, KEY_F5,  [](){ set_rendermode(RENDERMODE_POINT);     });
 
   return app;
 }

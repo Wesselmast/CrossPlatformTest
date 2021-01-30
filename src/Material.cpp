@@ -81,7 +81,7 @@ struct UnlitMaterial : public Material {
   }
 };
 
-UnlitMaterial* material_unlit(AssetMap& map, int32 hex) {
+UnlitMaterial* material_unlit(AssetMap& map, int32 hex, const char* name = "material_unlit") {
   bool stored;
-  return asset_store<UnlitMaterial>(map, "material_unlit", stored, hex); 
+  return asset_store<UnlitMaterial>(map, name, stored, hex); 
 }

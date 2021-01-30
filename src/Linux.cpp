@@ -1,6 +1,10 @@
 #define __LINUX__
 
 #include <cstdio>
+
+static bool globalConfinedCursor;
+void confine_cursor(bool confine);
+
 #include "Application.cpp"
 
 #include <chrono>
@@ -9,14 +13,18 @@
 #include <X11/Xlib.h>
 #include <GL/glx.h>
 
-inline void expose(OpenGLState* state, Display* d, Window& w) {
+static Display* d;
+static Window w;
+static Cursor emptyCursor;
+
+inline void expose(OpenGLState* state) {
   XWindowAttributes wa;
   XGetWindowAttributes(d, w, &wa);
   
   gl_resize(state, wa.width, wa.height);
 }
 
-inline void get_mouse_position(Display* d, Window& w, int32* x, int32* y) {
+inline void get_mouse_position(int32* x, int32* y) {
   Window tempW;
   int32 tempX, tempY;
   uint32 tempM;
@@ -24,22 +32,31 @@ inline void get_mouse_position(Display* d, Window& w, int32* x, int32* y) {
   XQueryPointer(d, w, &tempW, &tempW, &tempX, &tempY, x, y, &tempM);
 }
 
-Cursor allocate_empty_cursor(Display* d, Window& w) { //maybe make a nice interface for this?
+
+void allocate_empty_cursor() {
   XColor col = {0};
   const char data[] = {0};
 
   Pixmap pixmap = XCreateBitmapFromData(d, w, data, 1, 1);
-  Cursor cursor = XCreatePixmapCursor(d, pixmap, pixmap, &col, &col, 0, 0);
+  emptyCursor   = XCreatePixmapCursor(d, pixmap, pixmap, &col, &col, 0, 0);
 
   XFreePixmap(d, pixmap);
+}
 
-  return cursor;
+void confine_cursor(bool confine) {
+  if(confine) {
+    XGrabPointer(d, w, true, 0, GrabModeAsync, GrabModeAsync, w, emptyCursor, CurrentTime);
+  }
+  else {
+    XGrabPointer(d, w, true, 0, GrabModeAsync, GrabModeAsync, w, None, CurrentTime);
+  }
+  globalConfinedCursor = confine;
 }
 
 int main() {
   srand(time(0));
 
-  Display* d = XOpenDisplay(0);
+  d = XOpenDisplay(0);
   Window root = DefaultRootWindow(d);
 
   GLint glAtt[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
@@ -50,16 +67,16 @@ int main() {
   xAtt.colormap = cmap;
   xAtt.event_mask = KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | ExposureMask;
 
-  Window w = XCreateWindow(d, root, 0, 0, 500, 500, 0, vi->depth, InputOutput, 
-			   vi->visual, CWColormap | CWEventMask, &xAtt);
+  w = XCreateWindow(d, root, 0, 0, 500, 500, 0, vi->depth, InputOutput, 
+		    vi->visual, CWColormap | CWEventMask, &xAtt);
   XMapWindow(d, w);
   XStoreName(d, w, "First GNU/Linux App");
 
   GLXContext glc = glXCreateContext(d, vi, 0, GL_TRUE);
   glXMakeCurrent(d, w, glc);
 
-  Cursor emptyCursor = allocate_empty_cursor(d, w);                                       //hidden cursor
-  XGrabPointer(d, w, true, 0, GrabModeAsync, GrabModeAsync, w, emptyCursor, CurrentTime); //confine mouse
+  allocate_empty_cursor();
+  confine_cursor(true);
 
   OpenGLState* state = gl_start();
   Input* input = input_start();
@@ -76,7 +93,7 @@ int main() {
     while(XPending(d) > 0) {
       XNextEvent(d, &e);
       switch(e.type) {
-	case Expose:        expose(state, d, w); break;
+	case Expose:        expose(state); break;
 	case KeyPress:      set_key_state(input, e.xkey.keycode,   1); break; 
 	case KeyRelease:    set_key_state(input, e.xkey.keycode,   0); break; 
 	case ButtonPress:   set_key_state(input, e.xbutton.button, 1); break; 
@@ -85,17 +102,19 @@ int main() {
     }
 
     int32 x, y;
-    get_mouse_position(d, w, &x, &y);
+    get_mouse_position(&x, &y);
     set_mouse_moved(input, x, y);
 
-    uint16& ww = state->windowWidth;
-    uint16& wh = state->windowHeight;
-    const int32 bfr = 10;
-    if(x < bfr || x > ww - bfr || y < bfr || y > wh - bfr) {
-      uint16 midX = ww / 2;
-      uint16 midY = wh / 2;
-      XWarpPointer(d, None, w, 0, 0, 0, 0, midX, midY);
-      reset_mouse(input, midX, midY);
+    if(globalConfinedCursor) {
+      uint16& ww = state->windowWidth;
+      uint16& wh = state->windowHeight;
+      const int32 bfr = 10;
+      if(x < bfr || x > ww - bfr || y < bfr || y > wh - bfr) {
+        uint16 midX = ww / 2;
+        uint16 midY = wh / 2;
+        XWarpPointer(d, None, w, 0, 0, 0, 0, midX, midY);
+        reset_mouse(input, midX, midY);
+      }
     }
 
     input_tick(input); 
