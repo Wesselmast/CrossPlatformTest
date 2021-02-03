@@ -1,7 +1,6 @@
 #pragma once
 #include "Types.cpp"
 #include "Math.cpp"
-#include "List.cpp"
 #include "Color.cpp"
 
 #define GLEW_STATIC
@@ -11,69 +10,33 @@
 #include <GL/glu.h>
 
 #include "Uniforms.cpp"
-
-#define LAYOUT_POSITION_3D 0x01
-#define LAYOUT_POSITION_2D 0x02
-#define LAYOUT_NORMAL      0x04
-#define LAYOUT_TEXCOORD    0x08
-#define LAYOUT_COLOR       0x10
-
-inline int32 get_layout_size(uint8 layout) {
-  int32 size = 0;
-
-  size += bool(layout & LAYOUT_POSITION_3D) * 3;
-  size += bool(layout & LAYOUT_POSITION_2D) * 2;
-  size += bool(layout & LAYOUT_NORMAL)      * 3;
-  size += bool(layout & LAYOUT_TEXCOORD)    * 2;
-  size += bool(layout & LAYOUT_COLOR)       * 3;
-
-  return size * sizeof(float32);
-}
-
-inline void activate_layout_element(uint8& pos, int64& stride, uint8 totalSize, uint8 elementSize) {
-  glEnableVertexAttribArray(pos);
-  glVertexAttribPointer(pos, elementSize, GL_FLOAT, GL_FALSE, totalSize, (void*)stride);
-  stride += elementSize * sizeof(float32);
-  ++pos;
-} 
-
-inline void activate_layout(uint8 layout) {
-  int32 size = get_layout_size(layout);
-  uint8 pos = 0;
-  int64 stride = 0;
-
-  if(layout & LAYOUT_POSITION_3D) activate_layout_element(pos, stride, size, 3);
-  if(layout & LAYOUT_POSITION_2D) activate_layout_element(pos, stride, size, 2);
-  if(layout & LAYOUT_NORMAL)      activate_layout_element(pos, stride, size, 3);
-  if(layout & LAYOUT_TEXCOORD)    activate_layout_element(pos, stride, size, 2);
-  if(layout & LAYOUT_COLOR)       activate_layout_element(pos, stride, size, 3);
-}
-
-struct Entity;
+#include "Batch.cpp"
 
 struct OpenGLState {
-  List<Entity*> entities;
-  List<Uniform*>* globalUniforms;
+  BatchMap batches;
+  UniformList globalUniforms;
+
+  int32 amtOfLights;
   
   Mat4 vp;
-  Vec3 lightPos;
+  Vec3 cameraPos;
   uint16 windowWidth;
   uint16 windowHeight;
 };
 
-#include "Entity.cpp"
-#include "Camera.cpp"
+#include "Actor.cpp"
+#include "RendererComponent.cpp"
+#include "CameraComponent.cpp"
 
-#define RENDERMODE_NORMAL     0x01
-#define RENDERMODE_WIREFRAME  0x02
-#define RENDERMODE_POINT      0x04
+#define RENDERMODE_NORMAL     GL_FILL
+#define RENDERMODE_WIREFRAME  GL_LINE
+#define RENDERMODE_POINT      GL_POINT
 
-inline void set_rendermode(uint8 renderMode) {
-  switch(renderMode) {
-    case RENDERMODE_NORMAL:    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);  break;
-    case RENDERMODE_WIREFRAME: glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);  break;
-    case RENDERMODE_POINT:     glPolygonMode(GL_FRONT_AND_BACK, GL_POINT); break;
-  }
+static int32 globalRenderUnlit;
+
+inline void set_rendermode(int32 renderMode) {
+  glPolygonMode(GL_FRONT_AND_BACK, renderMode);
+  globalRenderUnlit = renderMode != RENDERMODE_NORMAL;
 }
 
 inline void set_background_color(int32 hex) {
@@ -96,51 +59,36 @@ OpenGLState* gl_start() {
   glShadeModel(GL_SMOOTH);
   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
-  OpenGLState* state = (OpenGLState*)malloc(sizeof(OpenGLState));
-  state->globalUniforms = (List<Uniform*>*)malloc(sizeof(List<Uniform*>));
+  OpenGLState* state = new OpenGLState;
 
-  state->globalUniforms->insert(uniform_create_mat4("viewProj", &state->vp));
-  state->globalUniforms->insert(uniform_create_vec3("lightPos", &state->lightPos));
+  uniform(state->globalUniforms, "camPos",      &state->cameraPos);
+  uniform(state->globalUniforms, "viewProj",    &state->vp);
+  uniform(state->globalUniforms, "amtOfLights", &state->amtOfLights);
+
+  uniform(state->globalUniforms, "renderUnlit", &globalRenderUnlit);
 
   return state;
 }
 
-void gl_tick(OpenGLState* state, Camera* c) {
+void gl_tick(OpenGLState* state, Actor* c) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  get_component<CameraComponent*>(c, "camera")->update(state);
 
-  Node<Entity*>* current = state->entities.head;
-  while(current) {
-    Entity* e = current->data;
-    
-    glBindBuffer(GL_ARRAY_BUFFER, e->vertexBuffer);
-    activate_layout(e->vertexLayout);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, e->indexBuffer);
-
-    uint32& program = e->program;
-    glUseProgram(program);
-
-    uniform_tick_list(state->globalUniforms, program); 
-    uniform_tick_list(e->uniforms, program);
-
-    glDrawElements(GL_TRIANGLES, e->indexBufferSize, GL_UNSIGNED_INT, (void*)0);
-
-    glUseProgram(0);
-    glDisableVertexAttribArray(0);
-
-    current = current->next;
+  for(auto& matB : state->batches.map) {
+    matB.first->render(state->globalUniforms);
+    for(auto& meshB : matB.second) {
+      meshB.first->prepare_draw();
+      for(TransformComponent* t : meshB.second) {
+	t->render(matB.first->program);
+	meshB.first->draw();
+      }
+    }
   }
 }
 
 void gl_end(OpenGLState* state) {
   //later add in checking for level saving
 
-  Node<Entity*>* current = state->entities.head;
-  while(current) {
-    destroy_entity_partial(current->data);
-    current = current->next;
-  }
-
-  state->entities.free_list();
   uniform_free_list(state->globalUniforms);
   free(state);
 }

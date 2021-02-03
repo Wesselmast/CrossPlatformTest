@@ -2,84 +2,110 @@
 
 #include "Types.cpp"
 #include "Math.cpp"
-#include "List.cpp"
 #include "Color.cpp"
+#include "Macros.cpp"
 
-#include <string.h>
+#include <string>
+#include <cstring>
+#include <forward_list>
 
 typedef void(*fptr_uniformtick)(int32, void*);
 
-struct Uniform {
-  char name[64];
-  fptr_uniformtick tick;
-  void* data;
-  uint8 oneTime;
+template<typename T> 
+inline void uniform_tick(int32 location, T data) {
+  log_("ERR: Uniform not implemented\n");
+}
+
+template<>
+inline void uniform_tick(int32 location, float32 data) {
+  glUniform1f(location, data);
+}
+
+template<>
+inline void uniform_tick(int32 location, float32* data) {
+  glUniform1f(location, *data);
+}
+
+template<>
+inline void uniform_tick(int32 location, int32 data) {
+  glUniform1i(location, data);
+}
+
+template<>
+inline void uniform_tick(int32 location, int32* data) {
+  glUniform1i(location, *data);
+}
+
+template<>
+inline void uniform_tick(int32 location, Vec3 data) {
+  glUniform3f(location, data.x, data.y, data.z);
+}
+
+template<>
+inline void uniform_tick(int32 location, Vec3* data) {
+  glUniform3f(location, data->x, data->y, data->z);
+}
+
+template<>
+inline void uniform_tick(int32 location, Color data) {
+  glUniform3f(location, data.r, data.g, data.b);
+}
+
+template<>
+inline void uniform_tick(int32 location, Color* data) {
+  glUniform3f(location, data->r, data->g, data->b);
+}
+
+template<>
+inline void uniform_tick(int32 location, Mat4 data) {
+  glUniformMatrix4fv(location, 1, GL_TRUE, (float32*)&data.m0[0]); 
+}
+
+template<>
+inline void uniform_tick(int32 location, Mat4* data) {
+  glUniformMatrix4fv(location, 1, GL_TRUE, (float32*)&data->m0[0]); 
+}
+
+struct BaseUniform {
+  virtual void tick(int32 program) = 0;
+  virtual void print_name() = 0;
 };
 
-inline void uniform_tick_vec3(int32 location, void* data) {
-  Vec3* v = (Vec3*)data;
-  glUniform3f(location, v->x, v->y, v->z);
-}
+typedef std::forward_list<BaseUniform*> UniformList;
 
-inline void uniform_tick_color(int32 location, void* data) {
-  Color* c = (Color*)data;
-  glUniform3f(location, c->r, c->g, c->b);
-}
-
-inline void uniform_tick_mat4(int32 location, void* data) {
-  glUniformMatrix4fv(location, 1, GL_TRUE, (float32*)data); 
-}
-
-Uniform* uniform_create_generic(const char* name, void* data, uint32 dataSize, bool oneTime, fptr_uniformtick tick) {
-  Uniform* uniform = (Uniform*)malloc(sizeof(Uniform));
-
-  strcpy(uniform->name, name);
-  uniform->tick = tick;
-  uniform->oneTime = oneTime;
-
-  if(oneTime) {
-    uniform->data = malloc(dataSize);
-    memcpy(uniform->data, data, dataSize);
+template<typename T>
+struct Uniform : public BaseUniform {
+  Uniform(const std::string& name, T data) : data(data), name(name) {
   }
-  else uniform->data = data;
-  
-  return uniform;
+
+  inline void tick(int32 program) override {
+    int32 location = glGetUniformLocation(program, name.c_str());
+    uniform_tick(location, data);
+  }
+
+  inline void print_name() override {
+    log_("%s\n", name.c_str());
+  }
+
+  std::string name;
+  T data;
+};
+
+
+template<typename T>
+void uniform(UniformList& uniforms, const std::string& name, T data) {
+  uniforms.emplace_front(new Uniform<T>(name, data));
 }
 
-Uniform* uniform_create_color(const char* name, Color* data, bool oneTime = false) {
-  return uniform_create_generic(name, (void*)data, sizeof(Color), oneTime, &uniform_tick_color);
-}
-
-Uniform* uniform_create_vec3(const char* name, Vec3* data, bool oneTime = false) {
-  return uniform_create_generic(name, (void*)data, sizeof(Vec3), oneTime, &uniform_tick_vec3);
-}
-
-Uniform* uniform_create_mat4(const char* name, Mat4* data, bool oneTime = false) {
-  return uniform_create_generic(name, (void*)data, sizeof(Mat4), oneTime, &uniform_tick_mat4);
-}
-
-inline void uniform_tick_list(List<Uniform*>* uniforms, int32 program) {
-  Node<Uniform*>* current = uniforms->head;
-  int32 len = uniforms->length;
-  for(int32 i = 0; i < len; ++i) {
-    Uniform* uniform = current->data;
-    uniform->tick(glGetUniformLocation(program, uniform->name), uniform->data);
-    current = current->next;
+inline void uniform_tick_list(UniformList& uniforms, int32 program) {
+  for(BaseUniform* u : uniforms) {
+    u->tick(program);
   }
 }
 
-void uniform_free_list(List<Uniform*>* uniforms) {
-  Node<Uniform*>* current = uniforms->head;
-  Node<Uniform*>* next = nullptr;
-  int32 len = uniforms->length;
-
-  for(int32 i = 0; i < len; ++i) {
-    next = current->next;
-    Uniform* uniform = current->data;
-    if(uniform->oneTime) free(uniform->data);
-    free(current);
-    current = next;
+void uniform_free_list(UniformList& uniforms) {
+  while(!uniforms.empty()) {
+    delete uniforms.front();
+    uniforms.pop_front();
   }
-
-  free(uniforms);
 }

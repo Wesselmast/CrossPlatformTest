@@ -1,9 +1,12 @@
 #pragma once
-#include "OpenGL.cpp"
-#include "Camera.cpp"
+#include "Actor.cpp"
+#include "Asset.cpp"
+#include "ScriptComponent.cpp"
 
 struct AppState {
-  Entity* player;
-  Entity* light;
-  Camera* camera;
+  ActorList  actors;
+  AssetMap   aLUT;
+  ScriptList scripts;
+
+  Actor* camera;
 };
