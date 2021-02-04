@@ -232,7 +232,7 @@ bool app_tick(OpenGLState* state, Input* input, AppState* app, float64 dt, float
 void app_end(AppState* app) {
   while(!app->actors.empty()) {
     //TODO: this causes a segfault.. look into why
-    //delete app->actors.front();
+    delete app->actors.front();
     app->actors.pop_front();
   }
   for(auto itr : app->aLUT) {

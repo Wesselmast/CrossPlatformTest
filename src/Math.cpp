@@ -48,7 +48,11 @@ float32 clamp(float32 value, float32 min, float32 max) {
 }
 
 const float64 pi() {
-  return 3.14159265359f;
+  return 3.14159265358979323846;
+}
+
+const float64 sqrt1_2() {
+  return 0.707106781186547524401;
 }
 
 const float32 r2d() {
@@ -80,11 +84,11 @@ Vec3 operator-(const Vec3& a) {
 }
 
 bool are_near(float32 f1, float32 f2) {
-  return abs(f1 - f2) < 0.01f;
+  return fabs(f1 - f2) < 0.01f;
 }
 
 float32 vec3_length_squared(const Vec3& vec) {
-  return abs((vec.x * vec.x) + (vec.y * vec.y) + (vec.z * vec.z));
+  return fabs((vec.x * vec.x) + (vec.y * vec.y) + (vec.z * vec.z));
 }
 
 float32 vec3_length(const Vec3& vec) {

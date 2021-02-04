@@ -68,7 +68,7 @@ static float64 perlin_noise(float64 x, float64 y) {
   float64 lerp1 = perlin_lerp(grad00, grad10, fadeX);
   float64 lerp2 = perlin_lerp(grad01, grad11, fadeX);
 
-  return 0.5 + perlin_lerp(lerp1, lerp2, fadeY) * M_SQRT1_2;
+  return 0.5 + perlin_lerp(lerp1, lerp2, fadeY) * sqrt1_2();
 }
 
 static float64 fractal_noise(float64 x, float64 y, uint32 octaves, float64 persistence) {

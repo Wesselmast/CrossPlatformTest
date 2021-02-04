@@ -122,7 +122,7 @@ int main() {
     gl_tick(state, app->camera);
     glXSwapBuffers(d, w);
 
-    dt = std::chrono::duration<double>(timer.now() - start).count();
+    dt = std::chrono::duration<float64>(timer.now() - start).count();
     time += dt;
   }
 

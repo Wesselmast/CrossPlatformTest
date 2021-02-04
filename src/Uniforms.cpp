@@ -69,6 +69,7 @@ inline void uniform_tick(int32 location, Mat4* data) {
 struct BaseUniform {
   virtual void tick(int32 program) = 0;
   virtual void print_name() = 0;
+  virtual ~BaseUniform() {}
 };
 
 typedef std::forward_list<BaseUniform*> UniformList;

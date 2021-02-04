@@ -18,7 +18,7 @@ struct Actor {
 
   ~Actor() {
     for(auto itr : components) {
-      delete itr.second;
+      if(itr.second) delete itr.second;
     }
     components.clear();
     list->remove(this);
