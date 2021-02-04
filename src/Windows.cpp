@@ -37,7 +37,6 @@ void confine_cursor(bool confine) {
     ClipCursor(nullptr);
   }
   ShowCursor(!confine);
-  printf("confined: %d", confine);
   globalConfinedCursor = confine;
 } 
 
