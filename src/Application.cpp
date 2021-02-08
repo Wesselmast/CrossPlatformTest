@@ -24,11 +24,11 @@ void rotating_cube_tick(Input* input, Actor* actor, float64 dt, float64 time) {
 }
 
 void moving_light_tick(Input* input, Actor* actor, float64 dt, float64 time) {
-  float32 lSpeed = 0.9f, dist = 250.0f;
+  float32 lSpeed = 0.9f, dist = 333.0f;
   TransformComponent* l = get_component<TransformComponent*>(actor, "transform");
   Vec3 lPos = l->transform.position;
 
-  lPos.y = sin(time * lSpeed) * dist;
+  //lPos.y = sin(time * lSpeed) * dist;
   lPos.x = sin(time * lSpeed) * dist;
   lPos.z = cos(time * lSpeed) * dist;
 
@@ -100,7 +100,7 @@ Actor* actor_terrain(OpenGLState* state, AppState* app, const Transform& t) {
   TransformComponent* tc = get_component<TransformComponent*>(a, "transform"); 
   RendererComponent*  r  = get_component<RendererComponent*>(a,  "renderer");
   
-  r->set_mesh(mesh_terrain(app->aLUT, 512));
+  r->set_mesh(mesh_terrain(app->aLUT, 512, 4));
   r->set_material(material_terrain(app->aLUT));
   r->set_transform_component(tc);
 
@@ -180,11 +180,11 @@ AppState* app_start(OpenGLState* state, Input* input) {
   actor_skybox(state, app, get_component<CameraComponent*>(app->camera, "camera"));
   
   
-  Transform terrainT = {{ 500.0f, -300.0f, 100.0f},  zero(), {100.0f, 250.0f, 100.0f}};
+  Transform terrainT = {{ 500.0f, -300.0f, 100.0f},  zero(), {100.0f, 400.0f, 100.0f}};
   actor_terrain(state, app, terrainT); 
   Transform waterT = terrainT;
   waterT.scale = waterT.scale * 10.0f;
-  waterT.position.y = -200.0f;
+  waterT.position.y = -160.0f;
   actor_water_plane(state, app, waterT);
 
   //actor_terrain(state, app, {{ 500.0f, -300.0f, 1100.0f}, zero(), {100.0f, 250.0f, 100.0f}});
@@ -206,10 +206,10 @@ AppState* app_start(OpenGLState* state, Input* input) {
     }
   }
 
-  Actor* light = actor_point_light(state, app, zero(), {0xFFFFDD, 35000.0f});
+  Actor* light = actor_point_light(state, app, {250.0f, 0.0f, 250.0f}, {0xFFFFDD, 28000.0f});
   add_component(light, "movingLight", component_script(app->scripts, light, &moving_light_tick));
-  actor_point_light(state, app, zero(), {0xFFDD88, 55000.0f});
-  actor_point_light(state, app, {200.0f, 0.0f, 0.0f}, {0x884433, 45000.0f}); 
+  actor_point_light(state, app, zero(), {0xFFDD88, 15000.0f});
+  actor_point_light(state, app, {800.0f, 0.0f, 0.0f}, {0x884433, 450000.0f}); 
 
   register_key_down(input, KEY_ALT, []() { confine_cursor(false); });
   register_key_up(  input, KEY_ALT, []() { confine_cursor(true);  });
@@ -232,7 +232,7 @@ bool app_tick(OpenGLState* state, Input* input, AppState* app, float64 dt, float
 void app_end(AppState* app) {
   while(!app->actors.empty()) {
     //TODO: this causes a segfault.. look into why
-    delete app->actors.front();
+    //delete app->actors.front();
     app->actors.pop_front();
   }
   for(auto itr : app->aLUT) {

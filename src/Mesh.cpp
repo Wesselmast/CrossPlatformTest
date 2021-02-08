@@ -148,7 +148,7 @@ Mesh* mesh_terrain(AssetMap& map, int32 res = 256, int32 freq = 6, const char* n
       v.x = (float32)x / (float32)res;
       v.z = (float32)z / (float32)res;
 
-      float32 pixel = fractal_noise(x * period, z * period, 6, 0.4);
+      float32 pixel = fractal_noise(x * period, z * period, 16, 0.4);
 
       v.x *= scale;
       v.z *= scale;
